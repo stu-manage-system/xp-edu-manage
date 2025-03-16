@@ -1,9 +1,17 @@
 <template>
   <div class="any-table">
-    <el-table :data="props.data" style="width: 100%" :row-key="rowKey" v-loading="props.loading">
+    <el-table
+      :data="props.data"
+      style="width: 100%"
+      :row-key="rowKey"
+      v-loading="props.loading"
+    >
       <slot></slot>
     </el-table>
-    <div style="display: flex; justify-content: flex-end; margin-top: 20px" v-if="props.data.length">
+    <div
+      style="display: flex; justify-content: flex-end; margin-top: 20px"
+      v-if="props.data.length"
+    >
       <el-pagination
         size="default"
         background
@@ -20,92 +28,92 @@
 </template>
 
 <script setup lang="ts">
-  const props = defineProps({
-    data: {
-      type: Array,
-      default: () => [],
-    },
-    rowKey: {
-      type: String,
-      default: "id",
-    },
-    total: {
-      type: Number,
-      default: 0,
-    },
-    pageSize: {
-      type: Number,
-      default: 10,
-    },
-    currentPage: {
-      type: Number,
-      default: 1,
-    },
-    loading: {
-      type: Boolean,
-      default: false,
-    },
-  });
+const props = defineProps({
+  data: {
+    type: Array,
+    default: () => []
+  },
+  rowKey: {
+    type: String,
+    default: "id"
+  },
+  total: {
+    type: Number,
+    default: 0
+  },
+  pageSize: {
+    type: Number,
+    default: 10
+  },
+  currentPage: {
+    type: Number,
+    default: 1
+  },
+  loading: {
+    type: Boolean,
+    default: false
+  }
+});
 
-  const emit = defineEmits(["update:currentPage", "pageChange", "sizeChange"]);
+const emit = defineEmits(["update:currentPage", "pageChange", "sizeChange"]);
 
-  const list = ref([]);
+const list = ref([]);
 
-  const localCurrentPage = ref(props.currentPage);
+const localCurrentPage = ref(props.currentPage);
 
-  watch(
-    () => props.currentPage,
-    (newVal) => {
-      localCurrentPage.value = newVal;
-    }
-  );
+watch(
+  () => props.currentPage,
+  (newVal) => {
+    localCurrentPage.value = newVal;
+  }
+);
 
-  onMounted(() => {
-    initData();
-  });
+onMounted(() => {
+  initData();
+});
 
-  const initData = () => {
-    list.value = props.data as [];
-  };
+const initData = () => {
+  list.value = props.data as [];
+};
 
-  const handleCurrentChange = (val: number) => {
-    localCurrentPage.value = val;
-    emit("update:currentPage", val);
-    emit("pageChange", val);
-  };
+const handleCurrentChange = (val: number) => {
+  localCurrentPage.value = val;
+  emit("update:currentPage", val);
+  emit("pageChange", val);
+};
 
-  const handleSizeChange = (val: number) => {
-    emit("sizeChange", val);
-  };
+const handleSizeChange = (val: number) => {
+  emit("sizeChange", val);
+};
 </script>
 
 <style lang="scss">
-  .any-table {
-    .el-table--enable-row-transition .el-table__body td.el-table__cell {
-      transition: none;
+.any-table {
+  .el-table--enable-row-transition .el-table__body td.el-table__cell {
+    transition: none;
+  }
+
+  .el-table {
+    thead th:first-of-type,
+    td:first-of-type {
+      padding-left: 10px;
     }
 
-    .el-table {
-      thead th:first-of-type,
-      td:first-of-type {
-        padding-left: 10px;
-      }
+    thead th:last-of-type,
+    td:last-of-type {
+      padding-right: 10px;
+    }
 
-      thead th:last-of-type,
-      td:last-of-type {
-        padding-right: 10px;
-      }
-
-      tr {
-        height: 80px !important;
-      }
+    tr {
+      height: 65px !important;
     }
   }
+}
 </style>
 
 <style lang="scss" scoped>
-  .any-table {
-    overflow: hidden;
-    border-radius: 10px;
-  }
+.any-table {
+  overflow: hidden;
+  border-radius: 10px;
+}
 </style>

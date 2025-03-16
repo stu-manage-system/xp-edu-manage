@@ -11,6 +11,7 @@ export default {
     cancel: "取消",
     confirm: "确定",
     logOutTips: "您是否要退出登录?",
+    reLoginTips: "您是否要重新登录?",
   },
   search: {
     placeholder: "搜索页面",

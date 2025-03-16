@@ -74,6 +74,7 @@ declare module 'vue' {
     MenuTopSubmenu: typeof import('./../components/Layout/MenuTop/MenuTopSubmenu.vue')['default']
     MixedMenu: typeof import('./../components/Layout/MixedMenu/index.vue')['default']
     Notice: typeof import('./../components/Layout/Notice/index.vue')['default']
+    Password: typeof import('./../components/Layout/TopBar/password.vue')['default']
     RouterLink: typeof import('vue-router')['RouterLink']
     RouterView: typeof import('vue-router')['RouterView']
     Search: typeof import('./../components/Layout/Search/index.vue')['default']

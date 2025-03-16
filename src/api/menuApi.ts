@@ -1,5 +1,5 @@
-import { MenuListType } from "@/types/menu";
 import { ApiService } from "@/api/apiApi";
+import { MenuListType } from "@/types/menu";
 
 // 菜单接口
 export const menuService = {
@@ -9,10 +9,9 @@ export const menuService = {
   }> {
     // eslint-disable-next-line no-useless-catch
     try {
-      const response = await ApiService.getMeunList();
+      const response = await ApiService.getMenuList();
       return {
         menuList: getMeta(response.data),
-        // closeLoading: () => loading.close(),
       };
     } catch (error) {
       // loading.close();

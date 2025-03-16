@@ -1,14 +1,13 @@
-import axios, { InternalAxiosRequestConfig, AxiosRequestConfig, AxiosResponse } from "axios";
-import { ElMessage } from "element-plus";
 import { useUserStore } from "@/store/modules/user";
-import EmojiText from "../emojo";
+import axios, { AxiosRequestConfig, AxiosResponse, InternalAxiosRequestConfig } from "axios";
+import { ElMessage } from "element-plus";
 import { useRouter } from "vue-router";
-import { HOME_PAGE } from "@/router";
+import EmojiText from "../emojo";
 
 const router = useRouter();
 const axiosInstance = axios.create({
   timeout: 15000, // 请求超时时间(毫秒)
-  baseURL: "/gym", // API地址
+  baseURL: "/edu", // API地址
   withCredentials: true, // 异步请求携带cookie
   transformRequest: [(data) => JSON.stringify(data)], // 请求数据转换为 JSON 字符串
   validateStatus: (status) => status >= 200 && status < 300, // 只接受 2xx 的状态码
@@ -31,7 +30,7 @@ const axiosInstance = axios.create({
 // 请求拦截器
 axiosInstance.interceptors.request.use(
   (request: InternalAxiosRequestConfig) => {
-    const { token } = useUserStore().info;
+    const token = useUserStore().token;
 
     // 如果 token 存在，则设置请求头
     if (token) {
@@ -39,6 +38,7 @@ axiosInstance.interceptors.request.use(
         "Content-Type": "application/json",
         Authorization: token,
         "Sys-Route": "S-Authorization",
+        "X-App-Request-Flag": "7ffe419073fb67bffaa480fbc6673405",
       });
     }
 
@@ -52,9 +52,12 @@ axiosInstance.interceptors.request.use(
 
 // 响应拦截器
 axiosInstance.interceptors.response.use((response: AxiosResponse) => {
+  // 指定一个错误码  读到时直接退出系统
+  const errorCode = 100028;
   if (response.data.code != 0) {
     const msg = response.data.message ? response.data.message : "服务错误";
-    if (response.data.code === "tokenError" || response.data.code == 100009) {
+    if (response.data.code === "tokenError" || response.data.code == errorCode) {
+      ElMessage.error(msg);
       useUserStore().logOut();
       router.push("/login");
     } else if (response.data.code !== 0) {

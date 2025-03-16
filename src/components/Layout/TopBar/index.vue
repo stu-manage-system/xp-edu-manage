@@ -120,14 +120,10 @@
                     style="float: left"
                   />
                   <div class="user-wrap">
-                    <span class="name">{{ userInfo.username }}</span>
+                    <span class="name">{{ userInfo.userName }}</span>
                   </div>
                 </div>
                 <ul class="user-menu">
-                  <li @click="goPage('/user/user')">
-                    <i class="menu-icon iconfont-sys">&#xe734;</i>
-                    <span class="menu-txt">{{ $t("topBar.user[0]") }}</span>
-                  </li>
                   <li @click="editPassword">
                     <i class="menu-icon iconfont-sys">&#xe600;</i>
                     <span class="menu-txt">{{ $t("topBar.user[1]") }}</span>
@@ -141,162 +137,184 @@
             </template>
           </el-popover>
         </div>
-        <div style="margin-right: 10px; font-size: 14px; color: #000">
-          {{ userInfo.loginName }}
+        <div style="margin-right: 10px; font-size: 14px; color: blueviolet">
+          {{ userInfo.userName }}
         </div>
       </div>
     </div>
     <slot></slot>
 
     <Notice v-model:value="showNotice" ref="notice" />
+
+    <!-- 添加密码修改对话框 -->
+    <PasswordDialog
+      v-model:visible="showPasswordDialog"
+      @success="handlePasswordSuccess"
+    />
   </div>
 </template>
 
 <script setup lang="ts">
-import Breadcrumb from "../Breadcrumb/index.vue"
-import Notice from "../Notice/index.vue"
-import MixedMenu from "../MixedMenu/index.vue"
-import { LanguageEnum, MenuTypeEnum, MenuWidth } from "@/enums/appEnum"
-import { useSettingStore } from "@/store/modules/setting"
-import { useUserStore } from "@/store/modules/user"
-import { fullScreen, exitScreen } from "@/utils/utils"
-import { ElMessageBox } from "element-plus"
-import { HOME_PAGE } from "@/router"
-import { useI18n } from "vue-i18n"
-import mittBus from "@/utils/mittBus"
-import { useMenuStore } from "@/store/modules/menu"
-import { SystemInfo } from "@/config/setting"
+import { SystemInfo } from "@/config/setting";
+import { MenuTypeEnum, MenuWidth } from "@/enums/appEnum";
+import { HOME_PAGE } from "@/router";
+import { useMenuStore } from "@/store/modules/menu";
+import { useSettingStore } from "@/store/modules/setting";
+import { useUserStore } from "@/store/modules/user";
+import mittBus from "@/utils/mittBus";
+import { exitScreen, fullScreen } from "@/utils/utils";
+import { ElMessageBox } from "element-plus";
+import { useI18n } from "vue-i18n";
+import Breadcrumb from "../Breadcrumb/index.vue";
+import MixedMenu from "../MixedMenu/index.vue";
+import Notice from "../Notice/index.vue";
+import PasswordDialog from "./password.vue";
 
-const isWindows = navigator.userAgent.includes("Windows")
-const { locale } = useI18n()
+const isWindows = navigator.userAgent.includes("Windows");
+const { locale } = useI18n();
 
-const settingStore = useSettingStore()
-const userStore = useUserStore()
-const router = useRouter()
+const settingStore = useSettingStore();
+const userStore = useUserStore();
+const router = useRouter();
 
-const showMenuButton = computed(() => settingStore.showMenuButton)
-const menuOpen = computed(() => settingStore.menuOpen)
-const showCrumbs = computed(() => settingStore.showCrumbs)
-const userInfo = computed(() => userStore.getUserInfo)
-const language = computed(() => userStore.language)
-const isFullScreen = ref(false)
-const showNotice = ref(false)
-const notice = ref(null)
-const showSettingGuide = computed(() => settingStore.showSettingGuide)
-const userMenuPopover = ref()
-const menuList = computed(() => useMenuStore().getMenuList)
-const menuType = computed(() => settingStore.menuType)
-const isLeftMenu = computed(() => menuType.value === MenuTypeEnum.LEFT)
-const isTopMenu = computed(() => menuType.value === MenuTypeEnum.TOP)
-const isTopLeftMenu = computed(() => menuType.value === MenuTypeEnum.TOP_LEFT)
-const { t } = useI18n()
+const showMenuButton = computed(() => settingStore.showMenuButton);
+const menuOpen = computed(() => settingStore.menuOpen);
+const showCrumbs = computed(() => settingStore.showCrumbs);
+const userInfo = computed(() => userStore.userInfo);
+const language = computed(() => userStore.language);
+const isFullScreen = ref(false);
+const showNotice = ref(false);
+const notice = ref(null);
+const showSettingGuide = computed(() => settingStore.showSettingGuide);
+const userMenuPopover = ref();
+const menuList = computed(() => useMenuStore().getMenuList);
+const menuType = computed(() => settingStore.menuType);
+const isLeftMenu = computed(() => menuType.value === MenuTypeEnum.LEFT);
+const isTopMenu = computed(() => menuType.value === MenuTypeEnum.TOP);
+const isTopLeftMenu = computed(() => menuType.value === MenuTypeEnum.TOP_LEFT);
+const { t } = useI18n();
 
-const { width } = useWindowSize()
+const { width } = useWindowSize();
 
 const menuTopWidth = computed(() => {
-  return width.value * 0.5
-})
+  return width.value * 0.5;
+});
 
 onMounted(() => {
-  initLanguage()
-  document.addEventListener("click", bodyCloseNotice)
-})
+  initLanguage();
+  document.addEventListener("click", bodyCloseNotice);
+});
 
 onUnmounted(() => {
-  document.addEventListener("click", bodyCloseNotice)
-})
+  document.addEventListener("click", bodyCloseNotice);
+});
 
 const fullScreenFun = () => {
-  fullScreen()
-  isFullScreen.value = true
-}
+  fullScreen();
+  isFullScreen.value = true;
+};
 
 const exitScreenFun = () => {
-  exitScreen()
-  isFullScreen.value = false
-}
+  exitScreen();
+  isFullScreen.value = false;
+};
 
 const topBarWidth = (): string => {
   if (menuType.value === MenuTypeEnum.TOP) {
-    return "100%"
+    return "100%";
   } else {
     return menuOpen.value
       ? `calc(100% - ${MenuWidth.OPEN})`
-      : `calc(100% - ${MenuWidth.CLOSE})`
+      : `calc(100% - ${MenuWidth.CLOSE})`;
   }
-}
+};
 
 const visibleMenu = () => {
-  settingStore.setMenuOpen(!menuOpen.value)
-}
+  settingStore.setMenuOpen(!menuOpen.value);
+};
 
 const goPage = (path: string) => {
-  router.push(path)
-}
+  router.push(path);
+};
 
 const toHome = () => {
-  router.push(HOME_PAGE)
-}
+  router.push(HOME_PAGE);
+};
+
+// 添加密码修改对话框的显示状态
+const showPasswordDialog = ref(false);
+
+// 修改密码方法
+const editPassword = () => {
+  showPasswordDialog.value = true;
+  closeUserMenu(); // 关闭用户菜单
+};
+
+// 密码修改成功的回调
+const handlePasswordSuccess = () => {
+  showPasswordDialog.value = false;
+  userStore.logOut();
+};
 
 const loginOut = () => {
-  closeUserMenu()
+  closeUserMenu();
   setTimeout(() => {
     ElMessageBox.confirm(t("common.logOutTips"), t("common.tips"), {
       confirmButtonText: t("common.confirm"),
       cancelButtonText: t("common.cancel"),
       customClass: "login-out-dialog"
     }).then(() => {
-      userStore.logOut()
-    })
-  }, 200)
-}
+      userStore.logOut();
+    });
+  }, 200);
+};
 
 const initLanguage = () => {
-  locale.value = language.value
-}
+  locale.value = language.value;
+};
 
 const openSetting = () => {
-  mittBus.emit("openSetting")
+  mittBus.emit("openSetting");
 
   // 隐藏设置引导
   if (showSettingGuide.value) {
-    settingStore.hideSettingGuide()
+    settingStore.hideSettingGuide();
   }
   // 打开设置引导
   // settingStore.openSettingGuide()
-}
+};
 
 const openSearchDialog = () => {
-  mittBus.emit("openSearchDialog")
-}
+  mittBus.emit("openSearchDialog");
+};
 
 const bodyCloseNotice = (e: any) => {
-  let { className } = e.target
+  let { className } = e.target;
 
   if (showNotice.value) {
     if (typeof className === "object") {
-      showNotice.value = false
-      return
+      showNotice.value = false;
+      return;
     }
     if (className.indexOf("notice-btn") === -1) {
-      showNotice.value = false
+      showNotice.value = false;
     }
   }
-}
+};
 
 const visibleNotice = () => {
-  showNotice.value = !showNotice.value
-}
+  showNotice.value = !showNotice.value;
+};
 
 const visibleLock = () => {
-  mittBus.emit("openLockScreen")
-}
+  mittBus.emit("openLockScreen");
+};
 
 const closeUserMenu = () => {
   setTimeout(() => {
-    userMenuPopover.value.hide()
-  }, 100)
-}
+    userMenuPopover.value.hide();
+  }, 100);
+};
 </script>
 
 <style lang="scss" scoped>

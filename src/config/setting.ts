@@ -9,7 +9,7 @@ export const ElementPlusTheme = {
 // 系统信息
 export const SystemInfo = {
   // 系统名称
-  name: 'GYM门店管理',
+  name: '西浦教务管理系统',
   // 登录默认帐号、密码
   login: {
     account: '',

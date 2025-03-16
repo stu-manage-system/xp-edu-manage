@@ -1,5 +1,5 @@
-import request from "@/utils/http";
 import { BaseResult } from "@/types/axios";
+import request from "@/utils/http";
 import { pageParams } from "./model/loginModel";
 
 export class UserService {
@@ -7,78 +7,92 @@ export class UserService {
   // 获取用户信息列表
   static queryStoreUserList(data: pageParams) {
     return request.post<BaseResult>({
-      url: "/store/user/queryStoreUserList",
+      url: "/user/list",
       data,
     });
   }
 
   // 添加用户
-  static addStoreUser(data: any) {
+  static addUser(data: any) {
     return request.post<BaseResult>({
-      url: "/store/user/addStoreUser",
+      url: "/user/save",
       data,
     });
   }
 
   // 编辑用户
-  static editStoreUser(data: any) {
+  static editUser(data: any) {
     return request.post<BaseResult>({
-      url: "/store/user/modifyStoreUser",
+      url: "/user/edit",
       data,
     });
   }
 
+  // 获取用户详情
+  static getUserDetail(params: any) {
+    return request.get<BaseResult>({
+      url: `/user/detail/${params}`,
+    });
+  }
+
+  // 删除用户
+  static deleteUser(params: any) {
+    return request.del<BaseResult>({
+      url: `/user/delete/${params}`,
+    });
+  }
+
   // 修改密码
-  static editStoreUserPassword(data: any) {
+  static editUserPassword(data: any) {
     return request.post<BaseResult>({
-      url: "/store/user/modifyPassword",
+      url: "/user/modifyPassword",
       data,
     });
   }
 
   // 重置密码
-  static resetStoreUserPassword(data: any) {
-    return request.post<BaseResult>({
-      url: "/store/user/resetPassword",
-      data,
+  static resetUserPassword(params: any) {
+    return request.get<BaseResult>({
+      url: `/user/resetPassword`,
+      params,
     });
   }
 
   // 获取角色列表
-  static queryStoreRoleList(data: pageParams) {
+  static queryRoleList(data: pageParams) {
     return request.post<BaseResult>({
-      url: "/store/role/queryRoleList",
+      url: "/auth/queryRoleList",
       data,
     });
   }
 
   // 添加角色
-  static addStoreRole(data: any) {
+  static addRole(data: any) {
     return request.post<BaseResult>({
-      url: "/store/role/addRole",
+      url: "/auth/addRole",
       data,
     });
   }
 
   // 编辑角色
-  static updateStoreRole(data: any) {
+  static updateRole(data: any) {
     return request.post<BaseResult>({
-      url: "/store/role/modifyRole",
+      url: "/auth/modifyRole",
       data,
     });
   }
 
   // 删除角色
-  static deleteStoreRole(params: any) {
+  static deleteRole(params: any) {
     return request.del<BaseResult>({
-      url: `/store/role/deleteRole/${params}`,
+      url: `/auth/deleteRole/${params}`,
     });
   }
 
   // 角色详情
-  static getStoreRoleDetail(params: any) {
+  static getRoleDetail(params: any) {
     return request.get<BaseResult>({
-      url: `/store/role/detail/${params}`,
+      url: `/auth/detail/${params}`,
     });
   }
 

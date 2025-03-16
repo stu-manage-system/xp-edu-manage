@@ -37,17 +37,17 @@
 </template>
 
 <script setup lang="ts">
-import { ref, computed } from "vue"
-import { SystemGradientColor, SystemMainColor } from "@/config/setting"
-import { useSettingStore } from "@/store/modules/setting"
-import { CountTo } from "vue3-count-to"
-import { ApiService } from "@/api/apiApi"
+import { ApiService } from "@/api/apiApi";
+import { SystemMainColor } from "@/config/setting";
+import { useSettingStore } from "@/store/modules/setting";
+import { computed, ref } from "vue";
+import { CountTo } from "vue3-count-to";
 
-const settingStore = useSettingStore()
-const showWorkTab = computed(() => settingStore.showWorkTab)
+const settingStore = useSettingStore();
+const showWorkTab = computed(() => settingStore.showWorkTab);
 const colorIndex = computed(() =>
   SystemMainColor.indexOf(settingStore.systemThemeColor)
-)
+);
 const showData = ref({
   memberCount: {
     totalCount: 0,
@@ -59,8 +59,8 @@ const showData = ref({
     todayAdd: 0,
     monthAdd: 0
   }
-})
-const soonExpireCount = ref(0)
+});
+const soonExpireCount = ref(0);
 
 // 定义卡片配置
 const cardConfigs = [
@@ -74,14 +74,14 @@ const cardConfigs = [
     icon: "\ue724",
     dataKey: "vipMemberCount"
   }
-] as const
+] as const;
 
-const dataList = ref<any[]>([])
+const dataList = ref<any[]>([]);
 
 // 获取数据接口
 const getCardList = async () => {
-  const res = await ApiService.getWorkbenchData()
-  showData.value = res.data
+  const res = await ApiService.getWorkbenchData();
+  showData.value = res.data;
 
   // 根据配置生成数据列表
   dataList.value = cardConfigs.map((config) => ({
@@ -92,12 +92,12 @@ const getCardList = async () => {
     totalCount: showData.value[config.dataKey].totalCount,
     todayAdd: showData.value[config.dataKey].todayAdd,
     monthAdd: showData.value[config.dataKey].monthAdd
-  }))
+  }));
 
-  soonExpireCount.value = res.data.soonExpireCount
-}
+  soonExpireCount.value = res.data.soonExpireCount;
+};
 
-getCardList()
+// getCardList()
 </script>
 
 <style lang="scss" scoped>

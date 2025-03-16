@@ -1,10 +1,10 @@
 import { LanguageEnum } from "@/enums/appEnum";
 import { router } from "@/router";
+import { MenuListType } from "@/types/menu";
 import { defineStore } from "pinia";
 import { useMenuStore } from "./menu";
 import { useSettingStore } from "./setting";
 import { useWorktabStore } from "./worktab";
-
 interface UserState {
   language: LanguageEnum; // 语言
   isLogin: boolean; // 是否登录
@@ -14,7 +14,9 @@ interface UserState {
     role?: string; // 添加角色属性
     [key: string]: any;
   };
+  token: string; // 添加token属性，用于API请求认证
   searchHistory: string[];
+  menuList: MenuListType[];
 }
 
 export const useUserStore = defineStore("user", {
@@ -24,7 +26,9 @@ export const useUserStore = defineStore("user", {
     isLock: false,
     lockPassword: "",
     info: {},
+    token: "",
     searchHistory: [],
+    menuList: [],
   }),
   persist: true,
   getters: {
@@ -68,6 +72,7 @@ export const useUserStore = defineStore("user", {
           searchHistory: this.searchHistory,
           worktab: this.getWorktabState,
           setting: this.getSettingState,
+          menuList: this.menuList,
         },
       });
     },
@@ -75,7 +80,10 @@ export const useUserStore = defineStore("user", {
       this.info = info;
       this.isLogin = true;
       // 登录后加载菜单
-      this.loadMenuByRole();
+      // this.loadMenuByRole();
+    },
+    setToken(token: string) {
+      this.token = token;
     },
     setLoginStatus(isLogin: boolean) {
       this.isLogin = isLogin;
@@ -92,6 +100,9 @@ export const useUserStore = defineStore("user", {
     setLockPassword(password: string) {
       this.lockPassword = password;
     },
+    setMenuList(list: MenuListType[]) {
+      this.menuList = list;
+    },
     logOut() {
       setTimeout(() => {
         document.getElementsByTagName("html")[0].removeAttribute("class"); // 移除暗黑主题
@@ -99,19 +110,13 @@ export const useUserStore = defineStore("user", {
         this.isLogin = false;
         this.isLock = false;
         this.lockPassword = "";
+        this.menuList = [];
         useWorktabStore().opened = [];
         this.saveUserData();
         const menuStore = useMenuStore();
         menuStore.setMenuList([]);
         router.push("/login");
       }, 300);
-    },
-    // 加载对应角色的菜单
-    loadMenuByRole() {
-      const menuStore = useMenuStore();
-      // 过滤出当前角色可见的菜单
-      const filteredMenus = filterMenuByRole(allRoutes, this.userRole);
-      menuStore.setMenuList(filteredMenus);
     },
   },
 });

@@ -41,8 +41,8 @@ const routes = [
         name: "dashboard",
         component: () => import(`@views/dashboard/console/index.vue`),
         meta: {
-          title: "工作台",
-          title_en: "Workbench",
+          title: "首页",
+          title_en: "Home",
           icon: "\ue6e6",
           keepAlive: false,
         },
@@ -117,55 +117,18 @@ const allRoutes = [
     path: "/dashboard",
     component: Home,
     meta: {
-      title: "工作台",
-      title_en: "Workbench",
+      title: "首页",
+      title_en: "Home",
       icon: "\ue6e6",
       keepAlive: false,
     },
-  },
-  {
-    path: "/company",
-    component: Home,
-    name: "Company",
-    meta: {
-      title: "公司管理",
-    },
-    children: [
-      {
-        path: "/company/account",
-        name: "Account",
-        component: () => import("@views/store/account.vue"),
-        meta: {
-          title: "用户管理",
-        },
-        roles: ["admin", "company"],
-      },
-      {
-        path: "/company/store",
-        name: "Store",
-        component: () => import("@views/store/store.vue"),
-        meta: {
-          title: "门店管理",
-        },
-        roles: ["admin", "company"],
-      },
-      {
-        path: "/company/role",
-        name: "Role",
-        component: () => import("@views/store/role.vue"),
-        meta: {
-          title: "角色管理",
-        },
-        roles: ["admin", "company"],
-      },
-    ],
   },
   {
     path: "/approval",
     component: Home,
     name: "Approval",
     meta: {
-      title: "审批中心",
+      title: "通知看板",
     },
     children: [
       {
@@ -173,27 +136,92 @@ const allRoutes = [
         name: "Template",
         component: () => import("@views/approval/approval-template/index.vue"),
         meta: {
-          title: "审批模板",
+          title: "消息通知",
         },
-        roles: ["admin", "company"],
       },
       {
         path: "/approval/workflow",
         name: "Workflow",
         component: () => import("@views/approval/workflow/index.vue"),
         meta: {
-          title: "审批流程",
+          title: "我的待办",
         },
-        roles: ["admin", "company"],
       },
       {
         path: "/approval/list",
         name: "ApprovalList",
         component: () => import("@views/approval/approval-list/index.vue"),
         meta: {
-          title: "审批列表",
+          title: "我处理的",
         },
-        roles: ["admin", "company"],
+      },
+      {
+        path: "/approval/myCc",
+        name: "ApprovalMyCc",
+        component: () => import("@views/approval/myCc/index.vue"),
+        meta: {
+          title: "抄送我的",
+        },
+      },
+    ],
+  },
+  {
+    path: "/HSBind",
+    component: Home,
+    meta: {
+      title: "家校绑定",
+      icon: "\ue6e6",
+      keepAlive: false,
+    },
+  },
+  {
+    path: "/studentManage",
+    component: Home,
+    meta: {
+      title: "学生管理",
+      icon: "\ue6e6",
+      keepAlive: false,
+    },
+  },
+  {
+    path: "/system",
+    component: Home,
+    name: "System",
+    meta: {
+      title: "系统管理",
+    },
+    children: [
+      {
+        path: "/system/user",
+        name: "User",
+        component: () => import("@views/system/user.vue"),
+        meta: {
+          title: "用户管理",
+        },
+      },
+      {
+        path: "/system/role",
+        name: "Role",
+        component: () => import("@views/system/role.vue"),
+        meta: {
+          title: "角色管理",
+        },
+      },
+      {
+        path: "/system/menu",
+        name: "Menu",
+        component: () => import("@views/system/menu.vue"),
+        meta: {
+          title: "菜单管理",
+        },
+      },
+      {
+        path: "/system/teaching",
+        name: "Teaching",
+        component: () => import("@views/system/teaching.vue"),
+        meta: {
+          title: "教学管理",
+        },
       },
     ],
   },
@@ -249,7 +277,6 @@ const allRoutes = [
         meta: {
           title: "薪资列表",
         },
-        roles: ["admin", "company"],
       },
     ],
   },
@@ -309,18 +336,18 @@ router.beforeEach(async (to, from, next) => {
     return;
   }
 
-  const userRole = userStore.userInfo?.role
+  // const userRole = userStore.userInfo?.role
 
-  if (!userRole) {
-    next('/login')
-    return
-  }
+  // if (!userRole) {
+  //   next('/login')
+  //   return
+  // }
 
-  // 检查用户是否有权限访问该路由
-  if (to.meta.roles && !to.meta.roles.includes(userRole)) {
-    next('/exception/403') // 无权限
-    return
-  }
+  // // 检查用户是否有权限访问该路由
+  // if (to.meta.roles && !to.meta.roles.includes(userRole)) {
+  //   next('/exception/403') // 无权限
+  //   return
+  // }
 
   if (to.matched.length === 0) {
     next("/exception/404");
