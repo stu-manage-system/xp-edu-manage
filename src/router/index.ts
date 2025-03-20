@@ -218,9 +218,51 @@ const allRoutes = [
       {
         path: "/system/teaching",
         name: "Teaching",
-        component: () => import("@views/system/teaching.vue"),
+        component: () => import("@views/teachingPlan/weekPlan/index.vue"),
         meta: {
           title: "教学管理",
+        },
+      },
+    ],
+  },
+  {
+    path: "/teachingPlan",
+    component: Home,
+    name: "TeachingPlan",
+    meta: {
+      title: "教学计划",
+    },
+    children: [
+      {
+        path: "/teachingPlan/classPlan",
+        name: "ClassPlan",
+        component: () => import("@views/teachingPlan/classPlan/index.vue"),
+        meta: {
+          title: "教学计划",
+        },
+      },
+      {
+        path: "/teachingPlan/addCourse",
+        name: "AddCourse",
+        component: () => import("@views/teachingPlan/classPlan/comp/addCourse.vue"),
+        meta: {
+          title: "新增课程",
+        },
+      },
+      {
+        path: "/teachingPlan/weekPlan",
+        name: "WeekPlan",
+        component: () => import("@views/teachingPlan/weekPlan/index.vue"),
+        meta: {
+          title: "周计划",
+        },
+      },
+      {
+        path: "/teachingPlan/semesterPlan",
+        name: "SemesterPlan",
+        component: () => import("@views/teachingPlan/semesterPlan/index.vue"),
+        meta: {
+          title: "学期计划",
         },
       },
     ],

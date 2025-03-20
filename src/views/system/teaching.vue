@@ -41,13 +41,13 @@
           <el-table-column prop="endTime" label="结束时间" />
           <el-table-column label="操作" width="180">
             <template #default="scope">
-              <el-button
+              <!-- <el-button
                 type="primary"
                 link
                 @click="handleEditTerm(scope.row)"
                 :icon="EditPen"
                 >编辑</el-button
-              >
+              > -->
               <el-button
                 type="danger"
                 link
@@ -189,13 +189,23 @@
 </template>
 
 <script setup lang="ts">
+import { UserService } from "@/api/usersApi";
 import { Delete, EditPen } from "@element-plus/icons-vue";
 import type { FormInstance, FormRules } from "element-plus";
 import { ElMessage, ElMessageBox } from "element-plus";
-import { onMounted, reactive, ref } from "vue";
+import { onMounted, reactive, ref, watch } from "vue";
 
 // 当前活动的标签页
 const activeTab = ref("term");
+
+// 监听标签页变化
+watch(activeTab, (newTab) => {
+  if (newTab === "term") {
+    fetchTermList();
+  } else if (newTab === "grade") {
+    fetchGradeList();
+  }
+});
 
 // --------- 学期相关 ---------
 interface TermItem {
@@ -294,33 +304,16 @@ const gradeRules = reactive<FormRules>({
   className: [{ required: true, message: "请输入班级", trigger: "blur" }]
 });
 
-// 页面初始化
-onMounted(() => {
-  // 加载学期数据
-  fetchTermList();
-  // 加载年级/班级数据
-  fetchGradeList();
-});
-
 // ------- 学期相关方法 -------
 // 加载学期数据
 const fetchTermList = async () => {
   try {
     termLoading.value = true;
-    // 实际开发中应该调用API获取数据
-    // const res = await api.getTermList({
-    //   page: termCurrentPage.value,
-    //   pageSize: termPageSize.value
-    // });
-    // termList.value = res.data.list;
-    // termTotal.value = res.data.total;
-
-    // 模拟延迟
-    setTimeout(() => {
-      termLoading.value = false;
-    }, 300);
+    const res = await UserService.getTermList();
+    termList.value = res.data.list;
+    termTotal.value = res.data.total;
+    termLoading.value = false;
   } catch (error) {
-    console.error("获取学期列表失败", error);
     termLoading.value = false;
   }
 };
@@ -387,25 +380,12 @@ const submitTermForm = async () => {
     if (valid) {
       // 这里应该调用添加/编辑API
       if (currentTermId.value) {
-        // 编辑现有学期
-        const index = termList.value.findIndex(
-          (item) => item.id === currentTermId.value
-        );
-        if (index !== -1) {
-          termList.value[index] = {
-            ...termForm,
-            id: currentTermId.value
-          };
-          ElMessage.success("修改成功");
-        }
       } else {
-        // 添加新学期
-        termList.value.push({
-          ...termForm,
-          id: Date.now() // 临时ID，实际应该由后端生成
-        });
-        termTotal.value += 1;
-        ElMessage.success("添加成功");
+        const res = await UserService.addTerm(termForm);
+        if (res.code === 0) {
+          ElMessage.success("添加成功");
+          fetchTermList();
+        }
       }
       termDialogVisible.value = false;
     }
@@ -417,20 +397,11 @@ const submitTermForm = async () => {
 const fetchGradeList = async () => {
   try {
     gradeLoading.value = true;
-    // 实际开发中应该调用API获取数据
-    // const res = await api.getGradeList({
-    //   page: gradeCurrentPage.value,
-    //   pageSize: gradePageSize.value
-    // });
-    // gradeList.value = res.data.list;
-    // gradeTotal.value = res.data.total;
-
-    // 模拟延迟
-    setTimeout(() => {
-      gradeLoading.value = false;
-    }, 300);
+    const res = await UserService.getGradeList();
+    gradeList.value = res.data.list;
+    gradeTotal.value = res.data.total;
+    gradeLoading.value = false;
   } catch (error) {
-    console.error("获取年级/班级列表失败", error);
     gradeLoading.value = false;
   }
 };
@@ -495,9 +466,7 @@ const submitGradeForm = async () => {
 
   await gradeFormRef.value.validate(async (valid) => {
     if (valid) {
-      // 这里应该调用添加/编辑API
       if (currentGradeId.value) {
-        // 编辑现有年级/班级
         const index = gradeList.value.findIndex(
           (item) => item.id === currentGradeId.value
         );
@@ -509,18 +478,22 @@ const submitGradeForm = async () => {
           ElMessage.success("修改成功");
         }
       } else {
-        // 添加新年级/班级
-        gradeList.value.push({
-          ...gradeForm,
-          id: Date.now() // 临时ID，实际应该由后端生成
-        });
-        gradeTotal.value += 1;
-        ElMessage.success("添加成功");
+        const res = await UserService.addGrade(gradeForm);
+        if (res.code === 0) {
+          ElMessage.success("添加成功");
+          fetchGradeList();
+        }
       }
       gradeDialogVisible.value = false;
     }
   });
 };
+
+// 页面初始化
+onMounted(() => {
+  // 只加载当前标签页的数据
+  fetchTermList();
+});
 </script>
 
 <style lang="scss" scoped>

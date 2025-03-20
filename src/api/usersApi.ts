@@ -96,33 +96,34 @@ export class UserService {
     });
   }
 
-  // 添加门店
-  static addStore(data: any) {
+  // 获取学期列表
+  static getTermList() {
+    return request.get<BaseResult>({
+      url: "/common/getTermList",
+    });
+  }
+
+  // 新增学期
+  static addTerm(data: any) {
     return request.post<BaseResult>({
-      url: "/store/storeInfo/addStoreInfo",
+      url: "/common/addTerm",
       data,
     });
   }
 
-  // 编辑门店
-  static editStore(data: any) {
+  // 获取年级列表
+  static getGradeList() {
+    return request.get<BaseResult>({
+      url: "/common/getGradeList",
+    });
+  }
+
+  // 新增年级
+  static addGrade(data: any) {
     return request.post<BaseResult>({
-      url: "/store/storeInfo/modifyStoreInfo",
+      url: "/common/addGrade",
       data,
     });
   }
 
-  // 获取门店详情
-  static getStoreDetail(params: any) {
-    return request.get<BaseResult>({
-      url: `/store/storeInfo/detail/${params}`,
-    });
-  }
-
-  // 获取门店列表
-  static getStoreList() {
-    return request.get<BaseResult>({
-      url: "/store/storeInfo/queryStoreList",
-    });
-  }
 }

@@ -5,6 +5,7 @@
       style="width: 100%"
       :row-key="rowKey"
       v-loading="props.loading"
+      :span-method="props.objectSpanMethod"
     >
       <slot></slot>
     </el-table>
@@ -28,6 +29,8 @@
 </template>
 
 <script setup lang="ts">
+import { PropType } from "vue";
+
 const props = defineProps({
   data: {
     type: Array,
@@ -52,9 +55,19 @@ const props = defineProps({
   loading: {
     type: Boolean,
     default: false
+  },
+  objectSpanMethod: {
+    type: Function as PropType<
+      (data: {
+        row: any;
+        rowIndex: number;
+        column: any;
+        columnIndex: number;
+      }) => { rowspan: number; colspan: number } | number[] | undefined
+    >,
+    default: undefined
   }
 });
-
 const emit = defineEmits(["update:currentPage", "pageChange", "sizeChange"]);
 
 const list = ref([]);
