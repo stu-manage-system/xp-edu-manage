@@ -177,11 +177,40 @@ const allRoutes = [
   {
     path: "/studentManage",
     component: Home,
+    name: "StudentManage",
     meta: {
       title: "学生管理",
       icon: "\ue6e6",
-      keepAlive: false,
     },
+    children: [
+      {
+        path: "/studentManage/list",
+        name: "StudentList",
+        component: () => import("@views/student/list.vue"),
+        meta: {
+          title: "学生列表",
+        },
+      },
+    ],
+  },
+  {
+    path: "/parentManage",
+    component: Home,
+    name: "ParentManage",
+    meta: {
+      title: "家长管理",
+      icon: "\ue6e6",
+    },
+    children: [
+      {
+        path: "/parentManage/list",
+        name: "ParentList",
+        component: () => import("@views/parent/list.vue"),
+        meta: {
+          title: "家长列表",
+        },
+      },
+    ],
   },
   {
     path: "/system",
@@ -244,7 +273,8 @@ const allRoutes = [
       {
         path: "/teachingPlan/addCourse",
         name: "AddCourse",
-        component: () => import("@views/teachingPlan/classPlan/comp/addCourse.vue"),
+        component: () =>
+          import("@views/teachingPlan/classPlan/comp/addCourse.vue"),
         meta: {
           title: "新增课程",
         },
@@ -341,16 +371,16 @@ const allRoutes = [
       },
     ],
   },
-]
+];
 
 // 2. 创建路由实例时注册所有路由
 export const router = createRouter({
   history: createWebHashHistory(),
   routes: [
     ...routes, // 公共路由
-    ...allRoutes    // 所有权限路由
-  ]
-})
+    ...allRoutes, // 所有权限路由
+  ],
+});
 
 // 3. 在路由守卫中根据用户角色过滤路由
 router.beforeEach(async (to, from, next) => {
@@ -423,25 +453,26 @@ router.afterEach(() => {
 const filterMenuByRole = (menus: any, role: any) => {
   return menus.filter((menu: any) => {
     if (menu.meta?.roles && !menu.meta.roles.includes(role)) {
-      return false
+      return false;
     }
 
     if (menu.children) {
-      menu.children = filterMenuByRole(menu.children, role)
+      menu.children = filterMenuByRole(menu.children, role);
     }
 
-    return true
-  })
-}
+    return true;
+  });
+};
 
 // 获取菜单时过滤
 async function getMenus() {
-  const userStore = useUserStore()
-  const userRole = userStore.userInfo?.role
+  const userStore = useUserStore();
+  const userRole = userStore.userInfo?.role;
 
   // 过滤掉用户无权访问的菜单
-  const filteredMenus = filterMenuByRole(allRoutes, userRole)
-  useMenuStore().setMenuList(filteredMenus)
+  const filteredMenus = filterMenuByRole(allRoutes, userRole);
+
+  useMenuStore().setMenuList(filteredMenus);
 }
 
 export function initRouter(app: App<Element>) {
