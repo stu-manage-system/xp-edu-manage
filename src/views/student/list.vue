@@ -126,6 +126,23 @@
         <el-form-item label="在读班级" prop="stuClass">
           <el-input v-model="formData.stuClass" placeholder="请输入在读班级" />
         </el-form-item>
+        <el-form-item label="班级类型" prop="classType">
+          <el-select v-model="formData.classType" placeholder="请选择班级类型">
+            <el-option label="班级制" value="CLASS_SYSTEM" />
+            <el-option label="跑班制" value="RUNNING_SYSTEM" />
+          </el-select>
+        </el-form-item>
+        <el-form-item label="教师编号" prop="teacherCode">
+          <el-input
+            :value="`${teacherSelectData.userCode ? teacherSelectData.userName + '（' + teacherSelectData.userCode + '）' : ''}`"
+            placeholder="请选择教师"
+            readonly
+          >
+            <template #append>
+              <el-button @click="openTeacherSelectInForm">选择</el-button>
+            </template>
+          </el-input>
+        </el-form-item>
         <el-form-item label="备注" prop="remark">
           <el-input
             type="textarea"
@@ -140,6 +157,45 @@
           <el-button type="primary" @click="handleSubmit">确定</el-button>
         </span>
       </template>
+    </el-dialog>
+
+    <!-- 选择教师弹窗 -->
+    <el-dialog
+      title="选择教师"
+      v-model="teacherSelectVisible"
+      width="800px"
+      :close-on-click-modal="false"
+    >
+      <div style="display: flex; gap: 10px; margin-bottom: 15px">
+        <el-input
+          v-model="teacherQuery.keyWord"
+          placeholder="请输入教师姓名"
+          style="width: 200px"
+        />
+        <el-button type="primary" @click="handleSearchTeacher">搜索</el-button>
+      </div>
+
+      <el-table
+        :data="teacherList"
+        height="400"
+        @row-click="handleSelectTeacher"
+      >
+        <el-table-column prop="userCode" label="教师编号" />
+        <el-table-column prop="userName" label="姓名" />
+        <el-table-column prop="teacherEnName" label="英文名" />
+        <el-table-column prop="userTel" label="联系电话" />
+        <el-table-column prop="userMail" label="邮箱" />
+        <el-table-column prop="remark" label="备注" />
+      </el-table>
+
+      <el-pagination
+        :current-page="teacherQuery.pageNum"
+        :page-size="teacherQuery.pageSize"
+        :total="teacherTotal"
+        @current-change="getTeacherList"
+        layout="total, prev, pager, next"
+        style="margin-top: 15px"
+      />
     </el-dialog>
 
     <!-- Student Detail Drawer -->
@@ -212,6 +268,7 @@
 <script setup lang="ts">
   import { reactive, onMounted, ref } from "vue";
   import { StudentService } from "@/api/studentApi";
+  import { UserService } from "@/api/usersApi";
   import { ElMessage } from "element-plus";
 
   const studentList = ref([]);
@@ -223,6 +280,13 @@
     stuEnName: "",
     stuClass: "",
     stuGrade: "",
+  });
+  const teacherList = ref([]);
+  const teacherTotal = ref(0);
+  const teacherQuery = reactive({
+    pageNum: 1,
+    pageSize: 10,
+    keyWord: "",
   });
   const isLoading = ref(false);
   const dialogVisible = ref(false);
@@ -239,6 +303,8 @@
     stuGrade: "", //学生年级
     stuHouse: "",
     remark: "",
+    classType: "CLASS_SYSTEM", // 新增：班级类型
+    teacherCode: "", // 新增：教师编号
   });
 
   const drawerVisible = ref(false);
@@ -258,11 +324,21 @@
     parents: [],
   });
 
+  // 教师选择相关变量
+  const teacherSelectVisible = ref(false);
+  const teacherSelectData = ref({
+    userCode: "",
+    userName: "",
+    teacherEnName: "",
+    userTel: "",
+    userMail: "",
+    remark: "",
+  });
   const getStudentList = async () => {
     isLoading.value = true;
     const res = await StudentService.queryStoresStudentList(studentQuery);
-    studentList.value = res.data.list;
-    total.value = res.data.total;
+    studentList.value = res.data?.list || [];
+    total.value = res.data?.total || 0;
     isLoading.value = false;
   };
   const handleSearch = () => {
@@ -286,12 +362,14 @@
       stuEnName: "",
       stuTel: "",
       stuMail: "",
-      stuSex: 1, //1：男，0：女
+      stuSex: 1,
       stuAge: 0,
-      stuClass: "", //学生班级
-      stuGrade: "", //学生年级
+      stuClass: "",
+      stuGrade: "",
       stuHouse: "",
       remark: "",
+      classType: "CLASS_SYSTEM",
+      teacherCode: "",
     });
   };
   const handleAdd = () => {
@@ -355,6 +433,38 @@
       ElMessage.error("操作失败");
     }
   };
+
+  // 打开选择教师弹窗（在表单中）
+  const openTeacherSelectInForm = async () => {
+    teacherSelectVisible.value = true;
+    await getTeacherList();
+  };
+
+  // 搜索教师
+  const handleSearchTeacher = async () => {
+    teacherQuery.pageNum = 1;
+    await getTeacherList();
+  };
+
+  // 获取教师列表
+  const getTeacherList = async () => {
+    try {
+      const res = await UserService.queryStoreUserList(teacherQuery);
+      teacherList.value = res.data?.list || [];
+      teacherTotal.value = res.data?.total || 0;
+    } catch (error) {
+      console.error(error);
+      ElMessage.error("获取教师列表失败");
+    }
+  };
+
+  // 选择教师
+  const handleSelectTeacher = (row: any) => {
+    formData.teacherCode = row.userCode;
+    teacherSelectVisible.value = false;
+    teacherSelectData.value = row;
+  };
+
   onMounted(() => {
     getStudentList();
   });
@@ -367,5 +477,9 @@
       font-weight: 500;
       color: #303133;
     }
+  }
+
+  .el-select {
+    width: 100%;
   }
 </style>

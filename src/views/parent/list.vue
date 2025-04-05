@@ -289,8 +289,8 @@
   const getStudentList = async () => {
     try {
       const res = await StudentService.queryStoresStudentList(studentQuery);
-      studentList.value = res.data.list;
-      studentTotal.value = res.data.total;
+      studentList.value = res.data?.list || [];
+      studentTotal.value = res.data?.total || 0;
     } catch (error) {
       console.error(error);
       ElMessage.error("获取学生列表失败");
