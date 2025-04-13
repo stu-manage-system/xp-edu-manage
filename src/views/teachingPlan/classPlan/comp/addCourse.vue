@@ -161,7 +161,7 @@
 </template>
 
 <script setup>
-import { TeachService } from "@/api/courseApi";
+import { TeachPlanService } from "@/api/teachPlan";
 import { Delete } from "@element-plus/icons-vue";
 import { ElMessage } from "element-plus";
 import { onMounted, reactive, ref } from "vue";
@@ -222,25 +222,22 @@ const deleteTimeSlot = (index) => {
 // 获取课程详情
 const getCourseDetail = async (id) => {
   if (props.type === "edit" && id) {
-    const res = await TeachService.queryCourseDetail(id);
+    const res = await TeachPlanService.getCoursePlanDetail(id);
     if (res.code === 0) {
       // 处理时间段数据转换
       const timeSlots = [];
-      // 如果是编辑，这里应该处理数据映射
-
       Object.assign(formData, {
         userCode: res.data.userCode || "",
         date: res.data.date || "",
-        lessonNo: res.data.lessonNo || ""
-        // 其他字段映射...
+        lessonNo: res.data.lessonNo || "",
+        summary: res.data.summary || "",
+        planContent: res.data.planContent || "",
+        timeSlots: res.data.timeSlotData || [],
+        subjectName: res.data.subject || "",
+        gradeName: res.data.gradeName || "",
+        className: res.data.className || ""
       });
     }
-  } else {
-    Object.assign(formData, {
-      userCode: "",
-      date: "",
-      lessonNo: ""
-    });
   }
 };
 
@@ -255,7 +252,7 @@ const handleSubmit = async () => {
         const submitData = {
           userCode: formData.userCode,
           dateTime: formData.date1,
-          subject: "艺术", // 可能需要修改
+          subject: formData.subjectName,
           lessonNo: formData.lessonNo,
           // 从timeSlots构建数据
           timeSlotData: formData.timeSlots.map((slot) => ({
@@ -267,9 +264,9 @@ const handleSubmit = async () => {
         console.log("submitData", submitData);
         let res;
         if (props.type === "add") {
-          res = await TeachService.addCoursePlan(submitData);
+          res = await TeachPlanService.addCoursePlan(submitData);
         } else {
-          res = await TeachService.updateCoursePlan({
+          res = await TeachPlanService.updateCoursePlan({
             ...submitData,
             id: props.id
           });
@@ -358,5 +355,9 @@ defineExpose({
 .form-buttons {
   margin-top: 20px;
   text-align: right;
+}
+
+:deep(.el-date-editor.el-input) {
+  width: 100%;
 }
 </style>

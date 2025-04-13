@@ -11,15 +11,15 @@
     </el-table>
     <div
       style="display: flex; justify-content: flex-end; margin-top: 20px"
-      v-if="props.data.length"
+      v-if="props.data.length && props.total"
     >
       <el-pagination
         size="default"
         background
         v-model:current-page="localCurrentPage"
-        :page-size="pageSize"
+        v-model:page-size="localPageSize"
         :pager-count="9"
-        layout="prev, pager, next, total,jumper"
+        layout="total, sizes, prev, pager, next, jumper"
         :total="total"
         @current-change="handleCurrentChange"
         @size-change="handleSizeChange"
@@ -27,9 +27,9 @@
     </div>
   </div>
 </template>
-
 <script setup lang="ts">
 import { PropType } from "vue";
+import type { TreeNode } from "element-plus";
 
 const props = defineProps({
   data: {
@@ -73,7 +73,7 @@ const emit = defineEmits(["update:currentPage", "pageChange", "sizeChange"]);
 const list = ref([]);
 
 const localCurrentPage = ref(props.currentPage);
-
+const localPageSize = ref(props.pageSize);
 watch(
   () => props.currentPage,
   (newVal) => {
@@ -81,6 +81,12 @@ watch(
   }
 );
 
+watch(
+  () => props.pageSize,
+  (newVal) => {
+    localPageSize.value = newVal;
+  }
+);
 onMounted(() => {
   initData();
 });
@@ -96,6 +102,7 @@ const handleCurrentChange = (val: number) => {
 };
 
 const handleSizeChange = (val: number) => {
+  localPageSize.value = val;
   emit("sizeChange", val);
 };
 </script>
