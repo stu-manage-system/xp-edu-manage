@@ -25,36 +25,20 @@
       :loading="isLoading"
     >
       <template #default>
-        <el-table-column
-          label="用户名"
-          prop="userName"
-          v-if="columns[0].show"
-          show-overflow-tooltip
-        />
+        <el-table-column label="用户名" prop="userName" show-overflow-tooltip />
         <el-table-column
           label="英文名称"
           prop="teacherEnName"
-          v-if="columns[1].show"
           show-overflow-tooltip
         />
+        <el-table-column label="角色" prop="roleName" show-overflow-tooltip />
         <el-table-column
           label="用户电话"
           prop="userTel"
-          v-if="columns[2].show"
           show-overflow-tooltip
         />
-        <el-table-column
-          label="邮箱"
-          prop="userMail"
-          v-if="columns[3].show"
-          show-overflow-tooltip
-        />
-        <el-table-column
-          label="备注"
-          prop="remark"
-          v-if="columns[4].show"
-          show-overflow-tooltip
-        />
+        <el-table-column label="邮箱" prop="userMail" show-overflow-tooltip />
+        <el-table-column label="备注" prop="remark" show-overflow-tooltip />
         <el-table-column
           fixed="right"
           label="操作"
@@ -210,14 +194,6 @@ const formData = ref({
   roleId: "",
   remark: ""
 });
-
-const columns = reactive([
-  { name: "用户名", show: true },
-  { name: "用户编号", show: true },
-  { name: "用户电话", show: true },
-  { name: "邮箱", show: true },
-  { name: "备注", show: true }
-]);
 
 const searchFormRef = ref<FormInstance>();
 const searchForm = reactive({
