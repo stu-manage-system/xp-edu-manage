@@ -20,18 +20,23 @@
           placeholder="请输入课程名称"
           :maxlength="50"
           show-word-limit
+          clearable
         />
       </el-form-item>
       <el-form-item label="课程体系编号" prop="courseSystemCode">
-        <el-select
+        <el-tree-select
           v-model="formData.courseSystemCode"
+          :data="courseSystemList"
+          node-key="code"
+          :props="{
+            label: 'name',
+            value: 'code',
+            children: 'children'
+          }"
           placeholder="请选择课程体系编号"
-        >
-          <el-option label="其他" value="other" />
-          <el-option label="素养课" value="literacy" />
-          <el-option label="IGCSE" value="igcse" />
-          <el-option label="A-level" value="alevel" />
-        </el-select>
+          check-strictly
+          clearable
+        />
       </el-form-item>
 
       <el-form-item label="课程简介">
@@ -107,6 +112,15 @@ const rules = {
   ]
 };
 
+const courseSystemList = ref([]);
+
+const getCourseSystemList = async () => {
+  const res = await CourseService.queryCourseSystemList({
+    data: { name: "" }
+  });
+  courseSystemList.value = res.data;
+};
+
 // 提交表单
 const handleSubmit = async () => {
   if (!formRef.value) return;
@@ -144,15 +158,26 @@ const handleCancel = () => {
 // 监听弹窗显示并加载数据
 watch(
   () => props.visible,
-  (val) => {
+  async (val) => {
+    props.dialogType === "edit" && (loading.value = true);
+    if (val) {
+      await getCourseSystemList();
+    }
+    formData.courseSystemCode = "";
+    formData.courseName = "";
+    formData.remark = "";
+    formData.courseSystemCode = "";
     if (val && props.dialogType === "edit") {
-      // 编辑时直接使用传入的行数据
-      Object.assign(formData, {
-        courseName: props.rowData.courseName,
-        courseSystemCode: props.rowData.courseSystemCode,
-        remark: props.rowData.remark || "",
-        courseCode: props.rowData.courseCode || ""
+      const res = await CourseService.queryCourseDetail({
+        courseCode: props.rowData.courseCode
       });
+      if (res.code === 0) {
+        formData.courseName = res.data.courseName;
+        formData.courseSystemCode = res.data.courseSystemCode;
+        formData.remark = res.data.remark;
+        formData.courseCode = res.data.courseCode;
+      }
+      props.dialogType === "edit" && (loading.value = false);
     }
   }
 );

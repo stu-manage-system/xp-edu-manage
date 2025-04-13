@@ -55,32 +55,30 @@
           width="250px"
           #default="scope"
         >
-          <div style="display: flex; justify-content: center">
-            <el-button
-              link
-              :icon="EditPen"
-              type="primary"
-              @click="showDialog('edit', scope.row)"
-            >
-              编辑
-            </el-button>
-            <el-button
-              link
-              :icon="Delete"
-              style="color: #fa6962"
-              @click="deleteCourse(scope.row)"
-            >
-              删除
-            </el-button>
-            <el-button
+          <el-button
+            link
+            :icon="EditPen"
+            type="primary"
+            @click="showDialog('edit', scope.row)"
+          >
+            编辑
+          </el-button>
+          <el-button
+            link
+            :icon="Delete"
+            style="color: #fa6962"
+            @click="deleteCourse(scope.row)"
+          >
+            删除
+          </el-button>
+          <!-- <el-button
               link
               :icon="Document"
               style="color: blue"
               @click="deleteCourse(scope.row)"
             >
               真题库
-            </el-button>
-          </div>
+            </el-button> -->
         </el-table-column>
       </template>
     </art-table>

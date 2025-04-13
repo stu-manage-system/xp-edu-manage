@@ -51,12 +51,17 @@
       @size-change="handleSizeChange"
       :objectSpanMethod="objectSpanMethod"
     >
-      <el-table-column label="序号" type="index" width="80" align="center" />
-      <el-table-column label="教师" prop="teacher" align="center" />
-      <el-table-column label="日期" prop="date" align="center" />
-      <el-table-column label="科目" prop="subject" align="center" />
-      <el-table-column label="周" prop="week" align="center" />
-      <el-table-column label="第几节课" prop="lessonNo" align="center" />
+      <el-table-column label="序号" prop="index" align="center" />
+      <el-table-column label="教师" prop="userName" align="center" />
+      <el-table-column label="年级/班级" prop="gradeName" align="center">
+        <template #default="{ row }">
+          {{ row.gradeName + "/" + row.className }}
+        </template>
+      </el-table-column>
+      <el-table-column label="日期" prop="dateTime" align="center" />
+      <el-table-column label="科目" prop="subjectName" align="center" />
+      <el-table-column label="周" prop="termNumber" align="center" />
+      <el-table-column label="第几节课" prop="subjectNumber" align="center" />
       <el-table-column label="总体内容" align="center">
         <el-table-column
           label="时间间隔"
@@ -66,14 +71,19 @@
         />
         <el-table-column
           label="内容"
-          prop="description"
+          prop="content"
           width="150"
           align="center"
         />
       </el-table-column>
-      <el-table-column label="操作人" prop="operator" align="center" />
-      <el-table-column label="更新时间" prop="updateTime" align="center" />
-      <el-table-column label="操作" width="200" align="center" fixed="right">
+      <el-table-column
+        label="创建时间"
+        prop="ctime"
+        align="center"
+        show-overflow-tooltip
+        width="250"
+      />
+      <el-table-column label="操作" width="180" align="center" fixed="right">
         <template #default="{ row }">
           <el-button
             link
@@ -109,6 +119,7 @@
     >
       <add-course
         :type="dialogType"
+        :visible="dialogVisible"
         @close="closeDialog"
         @refresh="handleSearch"
         :id="courseId"
@@ -136,44 +147,7 @@ const searchForm = reactive({
   subjectName: ""
 });
 
-const tableData = ref([
-  {
-    id: 1,
-    teacher: "徐清妍",
-    date: "2025-03-09",
-    subject: "艺术",
-    week: "四",
-    lessonNo: "4",
-    timeSlot: "1st 10 mins",
-    description: "材料选择",
-    operator: "徐清妍",
-    updateTime: "2025-03-09"
-  },
-  {
-    id: 1, // 相同 id 表示同一组数据
-    teacher: "徐清妍",
-    date: "2025-03-09",
-    subject: "艺术",
-    week: "四",
-    lessonNo: "4",
-    timeSlot: "2nd 10 mins",
-    description: "内容选择1",
-    operator: "徐清妍",
-    updateTime: "2025-03-09"
-  },
-  {
-    id: 1,
-    teacher: "徐清妍",
-    date: "2025-03-09",
-    subject: "艺术",
-    week: "四",
-    lessonNo: "4",
-    timeSlot: "3rd 10 mins",
-    description: "内容选择2",
-    operator: "徐清妍",
-    updateTime: "2025-03-09"
-  }
-]);
+const tableData = ref([]);
 
 // 对话框控制
 const dialogVisible = ref(false);
@@ -182,71 +156,106 @@ const addCourseRef = ref(null);
 const courseId = ref(null);
 // 处理单元格合并
 const objectSpanMethod = ({ row, column, rowIndex, columnIndex }) => {
-  if (columnIndex === 6 || columnIndex === 7) {
-    // 时间内容和事件列不合并
+  if (column.property === "timeSlot" || column.property === "content") {
     return {
       rowspan: 1,
       colspan: 1
     };
   }
-  const currentId = tableData.value[rowIndex].id;
-  if (rowIndex === 0) {
+
+  const currentId = row.id;
+
+  // 找到当前行在表格中的位置
+  let startIndex = rowIndex;
+  // 向上查找同一个 id 的第一行
+  while (startIndex > 0 && tableData.value[startIndex - 1].id === currentId) {
+    startIndex--;
+  }
+
+  if (startIndex === rowIndex) {
     let count = 1;
-    for (let i = 1; i < tableData.value.length; i++) {
+    // 向下计算同一组的行数
+    for (let i = rowIndex + 1; i < tableData.value.length; i++) {
       if (tableData.value[i].id === currentId) {
         count++;
       } else {
         break;
       }
     }
+
     return {
       rowspan: count,
       colspan: 1
     };
   } else {
-    const prevId = tableData.value[rowIndex - 1].id;
-    if (currentId === prevId) {
-      return {
-        rowspan: 0,
-        colspan: 0
-      };
-    } else {
-      let count = 1;
-      for (let i = rowIndex + 1; i < tableData.value.length; i++) {
-        if (tableData.value[i].id === currentId) {
-          count++;
-        } else {
-          break;
-        }
-      }
-      return {
-        rowspan: count,
-        colspan: 1
-      };
-    }
+    // 如果不是第一行，隐藏单元格
+    return {
+      rowspan: 0,
+      colspan: 0
+    };
   }
 };
 
 // 搜索方法
 const handleSearch = async () => {
-  // TODO: 实现搜索逻辑
-  const res = await TeachPlanService.getCoursePlanList(searchForm);
-  if (res.code === 200) {
-    tableData.value = res.data.list;
-    total.value = res.data.total;
+  isLoading.value = true;
+  try {
+    const res = await TeachPlanService.getCoursePlanList(searchForm);
+    if (res.code === 0) {
+      let flattenedData = [];
+      let count = 0;
+      res.data.list.forEach((item) => {
+        count++;
+        let subjectContextArray = [];
+        try {
+          subjectContextArray = JSON.parse(item.subjectContext || "[]");
+          if (!Array.isArray(subjectContextArray)) {
+            subjectContextArray = []; // 确保是数组
+          }
+        } catch (e) {
+          console.error("解析 subjectContext 失败:", e);
+          subjectContextArray = [];
+        }
+
+        if (subjectContextArray.length === 0) {
+          flattenedData.push({
+            ...item,
+            id: item.courseCode, // 使用 courseCode 作为 id
+            timeSlot: "",
+            content: "",
+            subjectContextArray: []
+          });
+        } else {
+          subjectContextArray.forEach((context, index) => {
+            flattenedData.push({
+              index: count,
+              ...item,
+              id: item.courseCode, // 使用 courseCode 作为 id
+              timeSlot: context.timeSlot,
+              content: context.content,
+              subjectContextArray: subjectContextArray
+            });
+          });
+        }
+      });
+      tableData.value = flattenedData;
+      total.value = res.data.total;
+    }
+  } catch (error) {
+    console.error("获取数据失败:", error);
+  } finally {
+    isLoading.value = false;
   }
 };
 
 // 分页方法
 const handlePageChange = (page) => {
-  // TODO: 实现分页逻辑
   currentPage.value = page;
   handleSearch();
 };
 
 // 分页方法
 const handleSizeChange = (size) => {
-  // TODO: 实现分页逻辑
   pageSize.value = size;
   handleSearch();
 };
@@ -260,14 +269,17 @@ const handleExport = () => {
 const showDialog = (type, row) => {
   dialogType.value = type;
   dialogVisible.value = true;
-  courseId.value = row.id;
-  nextTick(() => {
-    if (type === "edit") {
-      addCourseRef.value?.getCourseDetail(row.id);
-    } else {
+  courseId.value = row.courseCode;
+  if (type === "edit") {
+    console.log("222", 222);
+    nextTick(() => {
+      addCourseRef.value?.getCourseDetail(row.courseCode);
+    });
+  } else {
+    nextTick(() => {
       addCourseRef.value?.getCourseDetail();
-    }
-  });
+    });
+  }
 };
 
 // 关闭对话框方法
@@ -288,7 +300,7 @@ const handleEdit = (row) => {
 // 删除方法
 const handleDelete = async (row) => {
   try {
-    const res = await CourseService.deleteCourse(row.id);
+    const res = await CourseService.deleteCourse(row.courseCode);
     if (res.code === 200) {
       ElMessage.success("删除成功");
       handleSearch();
@@ -297,9 +309,13 @@ const handleDelete = async (row) => {
     ElMessage.error("删除失败");
   }
 };
+
+onMounted(() => {
+  handleSearch();
+});
 </script>
 
-<style scoped>
+<style scoped lang="scss">
 .class-plan {
   padding: 20px;
 }
@@ -332,5 +348,15 @@ const handleDelete = async (row) => {
 
 :deep(.el-dialog__body) {
   padding: 0;
+}
+
+:deep(.any-table .el-table td:first-of-type) {
+  padding-left: 0 !important;
+}
+:deep(.any-table .el-table td:last-of-type) {
+  padding-right: 0 !important;
+}
+:deep(.any-table .el-table tr) {
+  height: 47px !important;
 }
 </style>

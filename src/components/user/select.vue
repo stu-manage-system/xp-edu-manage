@@ -42,7 +42,7 @@
       v-if="total"
     >
       <el-pagination
-        v-model="pageNo"
+        v-model="pageNum"
         :total="total"
         :page-size="pageSize"
         layout="total, prev, pager, next, jumper"
@@ -84,14 +84,14 @@ const searchKeyword = ref("");
 const teacherList = ref<any[]>([]);
 const selectedUserId = ref("");
 const loading = ref(false);
-const pageNo = ref(1);
+const pageNum = ref(1);
 const pageSize = ref(10);
 const total = ref(0);
 const doSearch = async () => {
   loading.value = true;
   const res = await UserService.queryStoreUserList({
     keyWord: searchKeyword.value,
-    pageNo: pageNo.value,
+    pageNum: pageNum.value,
     pageSize: pageSize.value
   });
   if (res.code === 0) {
@@ -102,13 +102,13 @@ const doSearch = async () => {
 };
 
 const handleSizeChange = (size: number) => {
-  pageNo.value = 1;
+  pageNum.value = 1;
   pageSize.value = size;
   doSearch();
 };
 
 const handleCurrentChange = (page: number) => {
-  pageNo.value = page;
+  pageNum.value = page;
   doSearch();
 };
 
@@ -141,9 +141,6 @@ defineExpose({
 <style scoped lang="scss">
 .search-bar {
   margin-bottom: 20px;
-}
-
-.user-list-box {
 }
 
 .user-item {

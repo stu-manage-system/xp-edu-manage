@@ -1,39 +1,37 @@
 <template>
-  <div class="add-course-container">
+  <div class="add-course-container" v-loading="loading">
     <el-form
       :model="formData"
       :rules="rules"
       ref="courseForm"
       label-width="100px"
     >
-      <el-form-item label="教师" prop="userCode" required>
-        <el-select
-          v-model="formData.userCode"
+      <el-form-item label="教师" prop="userName" required>
+        <el-input
+          v-model="formData.userName"
           placeholder="请选择教师"
-          class="form-input"
+          readonly
+          @click="handleSelectTeacher"
         >
-          <el-option label="李老师" value="李老师" />
-          <el-option label="徐清妍" value="徐清妍" />
-        </el-select>
+          <template #append>
+            <el-button @click="handleSelectTeacher"> 选择 </el-button>
+          </template>
+        </el-input>
       </el-form-item>
 
-      <el-form-item label="年级" prop="gradeName" required>
+      <el-form-item label="年级/班级" prop="name" required>
         <el-select
-          v-model="formData.gradeName"
+          v-model="formData.name"
           placeholder="请选择年级"
           class="form-input"
+          @change="handleGradeChange"
         >
-          <el-option label="高级年级" value="高级年级" />
-        </el-select>
-      </el-form-item>
-
-      <el-form-item label="班级" prop="className">
-        <el-select
-          v-model="formData.className"
-          placeholder="请选择班级"
-          class="form-input"
-        >
-          <el-option label="高级班级" value="高级班级" />
+          <el-option
+            v-for="item in gradeList"
+            :key="item.value"
+            :label="item.label"
+            :value="item.value"
+          />
         </el-select>
       </el-form-item>
 
@@ -43,17 +41,19 @@
           type="date"
           placeholder="选择日期"
           class="form-input"
-          value-format="YYYY/MM/DD"
+          value-format="YYYY-MM-DD"
         />
       </el-form-item>
 
-      <el-form-item label="课程体系" prop="subjectName" required>
-        <el-select
-          v-model="formData.subjectName"
-          placeholder="请选择课程体系"
-          class="form-input"
-        >
-          <el-option label="艺术课程体系" value="艺术课程体系" />
+      <el-form-item label="课程" prop="subjectName" required>
+        <el-select v-model="formData.subjectName" placeholder="请选择课程">
+          <el-option
+            v-for="item in courseList"
+            :key="item.value"
+            :label="item.label"
+            :value="item.value"
+          >
+          </el-option>
         </el-select>
       </el-form-item>
 
@@ -67,34 +67,23 @@
         </el-select>
       </el-form-item>
 
-      <el-form-item label="本学期内几周" prop="weekNumber">
+      <el-form-item label="本学期内几周" prop="termNumber">
         <el-input
-          v-model="formData.weekNumber"
+          v-model="formData.termNumber"
           placeholder="请输入"
           class="form-input"
         />
       </el-form-item>
 
-      <el-form-item label="第几节课" prop="lessonNo">
+      <el-form-item label="第几节课" prop="subjectNumber">
         <el-input
-          v-model="formData.lessonNo"
+          v-model="formData.subjectNumber"
           placeholder="请输入第几节课"
           class="form-input"
         />
       </el-form-item>
 
-      <el-form-item label="总体概要" prop="summary">
-        <el-input
-          v-model="formData.summary"
-          type="textarea"
-          placeholder="请输入总体概要"
-          :rows="3"
-          maxlength="1000"
-          show-word-limit
-        />
-      </el-form-item>
-
-      <el-form-item label="计划时间" prop="timeSlots">
+      <el-form-item label="计划时间" prop="subjectContext">
         <div class="time-slots-container">
           <div class="time-slots-header">
             <div class="time-slot-index">序号</div>
@@ -104,7 +93,7 @@
 
           <div
             class="time-slot-row"
-            v-for="(slot, index) in formData.timeSlots"
+            v-for="(slot, index) in formData.subjectContext"
             :key="index"
           >
             <div class="time-slot-index">{{ index + 1 }}</div>
@@ -122,7 +111,10 @@
                 :rows="2"
               />
             </div>
-            <div class="time-slot-delete" v-if="formData.timeSlots.length > 1">
+            <div
+              class="time-slot-delete"
+              v-if="formData.subjectContext.length > 1"
+            >
               <el-button
                 type="danger"
                 :icon="Delete"
@@ -141,9 +133,9 @@
         </div>
       </el-form-item>
 
-      <el-form-item label="计划内容" prop="planContent">
+      <el-form-item label="总体内容" prop="remark">
         <el-input
-          v-model="formData.planContent"
+          v-model="formData.remark"
           type="textarea"
           placeholder="请输入计划内容"
           :rows="3"
@@ -157,6 +149,12 @@
         <el-button type="primary" @click="handleSubmit">确定</el-button>
       </el-form-item>
     </el-form>
+
+    <SelectTeacher
+      ref="selectTeacherRef"
+      :multiple="false"
+      @confirm="(teacher) => handleTeacherSelected(teacher)"
+    />
   </div>
 </template>
 
@@ -164,7 +162,10 @@
 import { TeachPlanService } from "@/api/teachPlan";
 import { Delete } from "@element-plus/icons-vue";
 import { ElMessage } from "element-plus";
-import { onMounted, reactive, ref } from "vue";
+import { onMounted, reactive, ref, watch } from "vue";
+import SelectTeacher from "@/components/user/select.vue";
+import { GradeService } from "@/api/gradeApi";
+import { CourseService } from "@/api/courseApi";
 
 const props = defineProps({
   type: {
@@ -174,33 +175,40 @@ const props = defineProps({
   id: {
     type: String,
     default: ""
+  },
+  visible: {
+    type: Boolean,
+    default: false
   }
 });
 
 const emit = defineEmits(["close", "refresh"]);
 const courseForm = ref(null);
-
+const selectTeacherRef = ref(null);
+const gradeList = ref([]);
+const courseList = ref([]);
+const loading = ref(false);
 // 表单数据
 const formData = reactive({
+  courseCode: "",
+  name: "",
   userCode: "",
+  userName: "",
   gradeName: "",
   className: "",
   date1: "",
   subjectName: "",
-  weekNumber: "",
-  lessonNo: "",
-  summary: "",
-  timeSlots: [
-    { timeSlot: "1st 10 mins", content: "" },
-    { timeSlot: "Homework", content: "" }
-  ],
-  planContent: ""
+  termName: "",
+  termNumber: "",
+  subjectNumber: "",
+  subjectContext: [{ timeSlot: "", content: "" }],
+  remark: ""
 });
 
 // 表单验证规则
 const rules = reactive({
-  userCode: [{ required: true, message: "请选择教师", trigger: "change" }],
-  gradeName: [{ required: true, message: "请选择年级", trigger: "change" }],
+  userName: [{ required: true, message: "请选择教师", trigger: "change" }],
+  name: [{ required: true, message: "请选择年级", trigger: "change" }],
   subjectName: [
     { required: true, message: "请选择课程体系", trigger: "change" }
   ],
@@ -209,57 +217,112 @@ const rules = reactive({
 
 // 添加时间段
 const addTimeSlot = () => {
-  formData.timeSlots.push({ timeSlot: "", content: "" });
+  formData.subjectContext.push({ timeSlot: "", content: "" });
 };
 
 // 删除时间段
 const deleteTimeSlot = (index) => {
-  if (formData.timeSlots.length > 1) {
-    formData.timeSlots.splice(index, 1);
+  if (formData.subjectContext.length > 1) {
+    formData.subjectContext.splice(index, 1);
+  }
+};
+const teacherList = ref({ userCode: "", userName: "" });
+// 选择教师
+const handleSelectTeacher = () => {
+  selectTeacherRef.value.show(teacherList.value);
+};
+
+// 获取年级列表
+const getGradeList = async () => {
+  const res = await GradeService.getGradeList({});
+  if (res.code === 0) {
+    gradeList.value = res.data.list.map((item) => {
+      return {
+        label: `${item.gradeName}/${item.className}`,
+        value: `${item.gradeName}/${item.className}`
+      };
+    });
   }
 };
 
+// 获取课程体系
+const getCourseList = async () => {
+  const res = await CourseService.queryCourseBasicList({});
+  if (res.code === 0) {
+    courseList.value = res.data.list.map((item) => {
+      return {
+        label: item.courseName,
+        value: item.courseName
+      };
+    });
+  }
+};
+
+const handleGradeChange = (value) => {
+  formData.name = value;
+  formData.className = value.split("/")[1];
+  formData.gradeName = value.split("/")[0];
+};
+// 教师选择确认
+const handleTeacherSelected = (teacher) => {
+  formData.userCode = teacher.userCode;
+  formData.userName = teacher.userName;
+};
 // 获取课程详情
 const getCourseDetail = async (id) => {
   if (props.type === "edit" && id) {
-    const res = await TeachPlanService.getCoursePlanDetail(id);
+    const res = await TeachPlanService.queryCoursePlanDetail({
+      courseCode: id
+    });
     if (res.code === 0) {
-      // 处理时间段数据转换
-      const timeSlots = [];
+      teacherList.value.userCode = res.data.userCode;
+      teacherList.value.userName = res.data.userName;
       Object.assign(formData, {
+        courseCode: res.data.courseCode || "",
         userCode: res.data.userCode || "",
-        date: res.data.date || "",
-        lessonNo: res.data.lessonNo || "",
-        summary: res.data.summary || "",
-        planContent: res.data.planContent || "",
-        timeSlots: res.data.timeSlotData || [],
-        subjectName: res.data.subject || "",
+        userName: res.data.userName || "",
+        name: res.data.gradeName + "/" + res.data.className || "",
+        date1: res.data.dateTime || "",
+        subjectNumber: res.data.subjectNumber || "",
+        termName: res.data.termName || "",
+        termNumber: res.data.termNumber || "",
+        remark: res.data.remark || "",
+        subjectContext: JSON.parse(res.data.subjectContext) || "",
+        subjectName: res.data.subjectName || "",
         gradeName: res.data.gradeName || "",
         className: res.data.className || ""
       });
     }
+  } else {
+    // 清空表单数据
+    Object.keys(formData).forEach((key) => {
+      formData[key] = "";
+    });
+    courseForm.value.resetFields();
   }
 };
 
 // 提交表单
 const handleSubmit = async () => {
   if (!courseForm.value) return;
-
   await courseForm.value.validate(async (valid) => {
     if (valid) {
       try {
-        // 构建提交的数据
         const submitData = {
+          courseCode: formData.courseCode,
           userCode: formData.userCode,
           dateTime: formData.date1,
-          subject: formData.subjectName,
-          lessonNo: formData.lessonNo,
-          // 从timeSlots构建数据
-          timeSlotData: formData.timeSlots.map((slot) => ({
+          subjectName: formData.subjectName,
+          gradeName: formData.gradeName,
+          className: formData.className,
+          subjectNumber: formData.subjectNumber,
+          termName: formData.termName,
+          termNumber: formData.termNumber,
+          subjectContext: formData.subjectContext.map((slot) => ({
             timeSlot: slot.timeSlot,
-            description: slot.content
+            content: slot.content
           })),
-          planContent: formData.planContent
+          remark: formData.remark
         };
         console.log("submitData", submitData);
         let res;
@@ -272,7 +335,7 @@ const handleSubmit = async () => {
           });
         }
 
-        if (res.code === 200) {
+        if (res.code === 0) {
           ElMessage.success(props.type === "add" ? "添加成功" : "更新成功");
           emit("refresh");
           emit("close");
@@ -292,7 +355,12 @@ const handleCancel = () => {
 };
 
 // 初始化编辑数据
-onMounted(() => {});
+onMounted(async () => {
+  loading.value = true;
+  await getGradeList();
+  await getCourseList();
+  loading.value = false;
+});
 
 defineExpose({
   getCourseDetail

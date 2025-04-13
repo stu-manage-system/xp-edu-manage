@@ -26,6 +26,14 @@ export class TeachPlanService {
     });
   }
 
+  // 获取课程计划详情
+  static queryCoursePlanDetail(params: any) {
+    return request.get<BaseResult>({
+      url: `/coursePlan/getDetail`,
+      params,
+    });
+  }
+
   // 获取周计划列表
   static queryWeekPlanList() {
     return request.get<BaseResult>({

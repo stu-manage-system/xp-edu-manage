@@ -115,7 +115,7 @@ const fetchData = async (page = 1, size = 10) => {
   try {
     // TODO: 替换为实际的API调用
     // const res = await ExamBankService.getList({
-    //   pageNo: page,
+    //   pageNum: page,
     //   pageSize: size,
     //   ...searchForm
     // })

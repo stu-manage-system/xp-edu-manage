@@ -36,7 +36,7 @@
         <el-table-column
           fixed="right"
           label="操作"
-          width="250px"
+          width="300px"
           #default="scope"
         >
           <div style="display: flex; justify-content: flex-start">
@@ -61,7 +61,7 @@
               :icon="Document"
               style="color: #67c23a"
               @click="showDialog('addSon', scope.row)"
-              v-if="scope.row.children"
+              v-if="scope.row.parentId === -1"
             >
               添加子类别
             </el-button>
@@ -139,8 +139,6 @@ const getList = async (page = 1, size = 10) => {
   try {
     const res = await CourseService.queryCourseSystemList({
       data: {
-        pageNo: page,
-        pageSize: size,
         ...searchForm
       }
     });

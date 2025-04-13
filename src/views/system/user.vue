@@ -319,10 +319,10 @@ const total = ref(0);
 const isLoading = ref(true);
 const tableData = ref([]);
 // 列表接口
-const getUserList = async (pageNo = 1, pageSize = 10) => {
+const getUserList = async (pageNum = 1, pageSize = 10) => {
   isLoading.value = true;
   const data = {
-    pageNo,
+    pageNum,
     pageSize,
     ...searchForm
   };
@@ -441,7 +441,7 @@ const roleList = ref([]);
 const getRoleList = async () => {
   try {
     const res = await UserService.queryRoleList({
-      pageNo: 1,
+      pageNum: 1,
       pageSize: 999 // 获取所有角色数据
     });
     if (res.code === 0) {
