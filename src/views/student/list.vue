@@ -120,17 +120,8 @@
         <el-form-item label="house信息" prop="stuHouse">
           <el-input v-model="formData.stuHouse" placeholder="请输入house信息" />
         </el-form-item>
-        <el-form-item label="在读年级" prop="stuGrade">
-          <el-input v-model="formData.stuGrade" placeholder="请输入在读年级" />
-        </el-form-item>
-        <el-form-item label="在读班级" prop="stuClass">
+        <el-form-item label="班级" prop="stuClass">
           <el-input v-model="formData.stuClass" placeholder="请输入在读班级" />
-        </el-form-item>
-        <el-form-item label="班级类型" prop="classType">
-          <el-select v-model="formData.classType" placeholder="请选择班级类型">
-            <el-option label="班级制" value="CLASS_SYSTEM" />
-            <el-option label="跑班制" value="RUNNING_SYSTEM" />
-          </el-select>
         </el-form-item>
         <el-form-item label="教师编号" prop="teacherCode">
           <el-input
@@ -297,14 +288,11 @@
     stuEnName: "",
     stuTel: "",
     stuMail: "",
-    stuSex: 1, //1：男，0：女
+    stuSex: 1,
     stuAge: 0,
-    stuClass: "", //学生班级
-    stuGrade: "", //学生年级
+    stuClassCodeList: [], //班级code
     stuHouse: "",
     remark: "",
-    classType: "CLASS_SYSTEM", // 新增：班级类型
-    teacherCode: "", // 新增：教师编号
   });
 
   const drawerVisible = ref(false);
@@ -364,12 +352,9 @@
       stuMail: "",
       stuSex: 1,
       stuAge: 0,
-      stuClass: "",
-      stuGrade: "",
+      stuClassCodeList: [], //班级code
       stuHouse: "",
       remark: "",
-      classType: "CLASS_SYSTEM",
-      teacherCode: "",
     });
   };
   const handleAdd = () => {

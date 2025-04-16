@@ -103,6 +103,52 @@
           },
         ],
       },
+      {
+        path: "/termManage",
+        name: "TermManage",
+        meta: {
+          title: "学期管理",
+        },
+        children: [
+          {
+            path: "/termManage/list",
+            name: "TermList",
+            meta: {
+              title: "学期列表",
+            },
+          },
+          {
+            path: "/termManage/courseList",
+            name: "CourseList",
+            meta: {
+              title: "排课管理",
+            },
+          },
+        ],
+      },
+      {
+        path: "/approval",
+        name: "Approval",
+        meta: {
+          title: "审批管理",
+        },
+        children: [
+          {
+            path: "/approval/student",
+            name: "StudentApproval",
+            meta: {
+              title: "学生请假",
+            },
+          },
+          {
+            path: "/approval/device",
+            name: "DeviceApproval",
+            meta: {
+              title: "设备申请",
+            },
+          },
+        ],
+      },
     ];
 
     const list = userStore.menuList;

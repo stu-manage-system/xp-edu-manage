@@ -371,6 +371,59 @@ const allRoutes = [
       },
     ],
   },
+  //课程管理
+  {
+    path: "/termManage",
+    component: Home,
+    name: "TermManage",
+    meta: {
+      title: "学期管理",
+    },
+    children: [
+      {
+        path: "/termManage/list",
+        name: "TermList",
+        component: () => import("@views/term-manage/termlist.vue"),
+        meta: {
+          title: "学期列表",
+        },
+      },
+      {
+        path: "/termManage/courseList",
+        name: "CourseList",
+        component: () => import("@views/term-manage/courseList.vue"),
+        meta: {
+          title: "排课管理",
+        },
+      },
+    ],
+  },
+  {
+    path: "/approval",
+    component: Home,
+    name: "Approval",
+    meta: {
+      title: "审批",
+    },
+    children: [
+      {
+        path: "/approval/student",
+        name: "StudentApproval",
+        component: () => import("@views/approval/leave-approval/index.vue"),
+        meta: {
+          title: "学生请假",
+        },
+      },
+      {
+        path: "/approval/device",
+        name: "DeviceApproval",
+        component: () => import("@views/approval/device-approval/index.vue"),
+        meta: {
+          title: "设备申请",
+        },
+      },
+    ],
+  },
 ];
 
 // 2. 创建路由实例时注册所有路由
