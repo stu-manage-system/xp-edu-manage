@@ -211,10 +211,10 @@ const tableData = ref([]);
 const treeRef = ref();
 const treeIdRef = ref();
 // 列表接口
-const getRoleList = async (pageNo = 1, pageSize = 10) => {
+const getRoleList = async (pageNum = 1, pageSize = 10) => {
   isLoading.value = true;
   const data = {
-    pageNo,
+    pageNum,
     pageSize,
     ...searchForm
   };

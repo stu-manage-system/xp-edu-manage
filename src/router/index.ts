@@ -244,14 +244,6 @@ const allRoutes = [
           title: "菜单管理",
         },
       },
-      {
-        path: "/system/teaching",
-        name: "Teaching",
-        component: () => import("@views/teachingPlan/weekPlan/index.vue"),
-        meta: {
-          title: "教学管理",
-        },
-      },
     ],
   },
   {
@@ -267,7 +259,7 @@ const allRoutes = [
         name: "ClassPlan",
         component: () => import("@views/teachingPlan/classPlan/index.vue"),
         meta: {
-          title: "教学计划",
+          title: "课计划",
         },
       },
       {
@@ -293,6 +285,41 @@ const allRoutes = [
         component: () => import("@views/teachingPlan/semesterPlan/index.vue"),
         meta: {
           title: "学期计划",
+        },
+      },
+    ],
+  },
+  // 教学管理
+  {
+    path: "/teachingManage",
+    component: Home,
+    name: "TeachingManage",
+    meta: {
+      title: "教学管理",
+    },
+    children: [
+      {
+        path: "/teachingManage/grade",
+        name: "Grade",
+        component: () => import("@views/grade/index.vue"),
+        meta: {
+          title: "年级班级",
+        },
+      },
+      {
+        path: "/teachingManage/courseSystem",
+        name: "CourseSystem",
+        component: () => import("@views/courseSystem/index.vue"),
+        meta: {
+          title: "课程体系",
+        },
+      },
+      {
+        path: "/teachingManage/courseBasic",
+        name: "CourseBasic",
+        component: () => import("@views/courseBasic/index.vue"),
+        meta: {
+          title: "课程信息",
         },
       },
     ],

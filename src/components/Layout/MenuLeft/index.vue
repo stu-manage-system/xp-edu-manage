@@ -67,90 +67,6 @@
   // const menuList = computed(() => useMenuStore().getMenuList)
 
   const menuList = computed(() => {
-    const staticMenus = [
-      {
-        path: "/studentManage",
-        name: "StudentManage",
-        meta: {
-          title: "学生管理",
-          title_en: "Student Management",
-          icon: "\ue6e6",
-        },
-        children: [
-          {
-            path: "/studentManage/list",
-            name: "StudentList",
-            meta: {
-              title: "学生列表",
-              title_en: "Student List",
-            },
-          },
-        ],
-      },
-      {
-        path: "/parentManage",
-        name: "ParentManage",
-        meta: {
-          title: "家长管理",
-        },
-        children: [
-          {
-            path: "/parentManage/list",
-            name: "ParentList",
-            meta: {
-              title: "家长列表",
-            },
-          },
-        ],
-      },
-      {
-        path: "/termManage",
-        name: "TermManage",
-        meta: {
-          title: "学期管理",
-        },
-        children: [
-          {
-            path: "/termManage/list",
-            name: "TermList",
-            meta: {
-              title: "学期列表",
-            },
-          },
-          {
-            path: "/termManage/courseList",
-            name: "CourseList",
-            meta: {
-              title: "排课管理",
-            },
-          },
-        ],
-      },
-      {
-        path: "/approval",
-        name: "Approval",
-        meta: {
-          title: "审批管理",
-        },
-        children: [
-          {
-            path: "/approval/student",
-            name: "StudentApproval",
-            meta: {
-              title: "学生请假",
-            },
-          },
-          {
-            path: "/approval/device",
-            name: "DeviceApproval",
-            meta: {
-              title: "设备申请",
-            },
-          },
-        ],
-      },
-    ];
-
     const list = userStore.menuList;
     if (settingStore.menuType === MenuTypeEnum.TOP_LEFT) {
       const currentTopPath = "/" + route.path.split("/")[1];
@@ -158,7 +74,7 @@
       return currentTopMenu?.children || [];
     }
     console.log("list", list);
-    return [...list, ...staticMenus];
+    return list;
   });
 
   const routerPath = computed(() => {

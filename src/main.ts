@@ -28,6 +28,7 @@ initRouter(app);
 registerGlobComp(app);
 setupGlobDirectives(app);
 
+
 app.use(language);
 app.use(piniaInstance);
 

@@ -4,7 +4,8 @@ export interface LoginParams {
 }
 
 export interface pageParams {
-  pageNo: number | string
+  pageNum: number | string
   pageSize: number | string
-  searchForm?: any
+  searchForm?: any,
+  keyWord?: string
 }

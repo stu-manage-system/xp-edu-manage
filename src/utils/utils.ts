@@ -157,3 +157,8 @@ export function formatDate(date: string | number | Date, format: string) {
   if (!date) return ''
   return dayjs(date).format(format)
 }
+
+// 根据数据枚举返回对应的名称
+export function getEnumName(enumData: any, value: any) {
+  return enumData.find((item: any) => item.value === value)?.label
+}

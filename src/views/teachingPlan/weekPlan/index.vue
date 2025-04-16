@@ -137,7 +137,7 @@
 </template>
 
 <script setup>
-import { TeachService } from "@/api/courseApi";
+import { CourseService } from "@/api/courseApi";
 import { Delete, EditPen } from "@element-plus/icons-vue";
 import { ElMessage } from "element-plus";
 import { nextTick, reactive, ref } from "vue";
@@ -255,7 +255,7 @@ const objectSpanMethod = ({ row, column, rowIndex, columnIndex }) => {
 // 搜索方法
 const handleSearch = async () => {
   // TODO: 实现搜索逻辑
-  const res = await TeachService.queryCourseList();
+  const res = await CourseService.queryCourseList();
   if (res.code === 200) {
     tableData.value = res.data.list;
     total.value = res.data.total;
@@ -314,7 +314,7 @@ const handleEdit = (row) => {
 // 删除方法
 const handleDelete = async (row) => {
   try {
-    const res = await TeachService.deleteCourse(row.id);
+    const res = await CourseService.deleteCourse(row.id);
     if (res.code === 200) {
       ElMessage.success("删除成功");
       handleSearch();

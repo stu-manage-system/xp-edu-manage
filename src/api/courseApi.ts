@@ -1,26 +1,28 @@
 import { BaseResult } from "@/types/axios";
 import request from "@/utils/http";
 
-export class TeachService {
-  // 获取教学计划列表
-  static queryCourseList() {
-    return request.get<BaseResult>({
-      url: "/coursePlan/getList",
+export class CourseService {
+
+  // 获取课程列表
+  static queryCourseBasicList(data: any) {
+    return request.post<BaseResult>({
+      url: "/courseBasic/getCourseList",
+      data,
     });
   }
 
   // 添加课程
-  static addCoursePlan(data: any) {
+  static addCourseBasic(data: any) {
     return request.post<BaseResult>({
-      url: "/store/course/saveCourse",
+      url: "/courseBasic/save",
       data,
     });
   }
 
   // 修改课程
-  static updateCoursePlan(data: any) {
+  static updateCourseBasic(data: any) {
     return request.post<BaseResult>({
-      url: "/coursePlan/updateCoursePlan",
+      url: "/courseBasic/update",
       data,
     });
   }
@@ -28,53 +30,62 @@ export class TeachService {
   // 查询课程详情
   static queryCourseDetail(params: any) {
     return request.get<BaseResult>({
-      url: `/coursePlan/getDetail/${params}`,
-    });
-  }
-
-  // 删除课程
-  static deleteCourse(params: any) {
-    return request.del<BaseResult>({
-      url: `/coursePlan/delete/${params}`,
-    });
-  }
-
-  // 获取周计划列表
-  static queryWeekPlanList() {
-    return request.get<BaseResult>({
-      url: "/weekPlan/getList",
-    });
-  }
-
-  // 查询周计划详情
-  static queryWeekPlanDetail(params: any) {
-    return request.get<BaseResult>({
-      url: `/weekPlan/getDetail/`,
+      url: `/courseBasic/getDetail`,
       params,
     });
   }
 
-  // 添加周计划
-  static addWeekPlan(data: any) {
-    return request.post<BaseResult>({
-      url: "/weekPlan/add",
-      data,
-    });
-  }
-
-  // 修改周计划
-  static updateWeekPlan(data: any) {
-    return request.post<BaseResult>({
-      url: "/weekPlan/update",
-      data,
-    });
-  }
-
-  // 删除周计划
-  static deleteWeekPlan(params: any) {
+  // 删除课程
+  static deleteCourseBasic(params: any) {
     return request.del<BaseResult>({
-      url: `/weekPlan/delete/${params}`,
+      url: `/courseBasic/delete/${params}`,
     });
   }
 
+  // 获取课程体系列表
+  static queryCourseSystemList(data: any) {
+    return request.post<BaseResult>({
+      url: "/courseSystem/getList",
+      data,
+    });
+  }
+
+  // 添加课程体系
+  static addCourseSystem(data: any) {
+    return request.post<BaseResult>({
+      url: "/courseSystem/save",
+      data,
+    });
+  }
+
+  // 修改课程体系
+  static updateCourseSystem(data: any) {
+    return request.post<BaseResult>({
+      url: "/courseSystem/update",
+      data,
+    });
+  }
+
+  // 删除课程体系
+  static deleteCourseSystem(params: any) {
+    return request.del<BaseResult>({
+      url: `/courseSystem/delete/${params}`,
+    });
+  }
+
+  // 查询课程体系详情
+  static queryCourseSystemDetail(params: any) {
+    return request.get<BaseResult>({
+      url: `/courseSystem/getDetail`,
+      params,
+    });
+  }
+
+  // 查询课程体系子类别
+  static getCourseChildrenList(params: any) {
+    return request.get<BaseResult>({
+      url: `/courseSystem/getChildren`,
+      params,
+    });
+  }
 }
