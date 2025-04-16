@@ -122,7 +122,7 @@
   import { ElMessage } from "element-plus";
   import { UserService } from "@/api/usersApi";
 
-  const studentList = ref([]);
+  const studentList = ref([{}]);
   const total = ref(0);
   const approvalQuery = reactive({
     pageNum: 1,

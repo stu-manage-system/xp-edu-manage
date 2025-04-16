@@ -67,7 +67,54 @@
   // const menuList = computed(() => useMenuStore().getMenuList)
 
   const menuList = computed(() => {
-    const list = userStore.menuList;
+    const list = userStore.menuList.concat([
+      {
+        path: "/approval",
+        name: "Approval",
+        meta: {
+          title: "审批",
+        },
+        children: [
+          {
+            path: "/approval/student",
+            name: "StudentApproval",
+            meta: {
+              title: "学生请假",
+            },
+          },
+          {
+            path: "/approval/device",
+            name: "DeviceApproval",
+            meta: {
+              title: "设备申请",
+            },
+          },
+        ],
+      },
+      {
+        path: "/termManage",
+        name: "TermManage",
+        meta: {
+          title: "学期管理",
+        },
+        children: [
+          {
+            path: "/termManage/list",
+            name: "TermList",
+            meta: {
+              title: "学期列表",
+            },
+          },
+          {
+            path: "/termManage/courseList",
+            name: "CourseList",
+            meta: {
+              title: "排课管理",
+            },
+          },
+        ],
+      },
+    ]);
     if (settingStore.menuType === MenuTypeEnum.TOP_LEFT) {
       const currentTopPath = "/" + route.path.split("/")[1];
       const currentTopMenu = list.find((menu) => menu.path === currentTopPath);

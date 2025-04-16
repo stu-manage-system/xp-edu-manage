@@ -42,20 +42,6 @@
             >
               排课
             </el-button>
-            <!-- <el-popconfirm
-              title="确定删除吗？"
-              @confirm="handleDelete(scope.row)"
-            >
-              <template #reference>
-                <el-button
-                  type="danger"
-                  style="margin-left: 10px"
-                  size="default"
-                >
-                  删除
-                </el-button>
-              </template>
-            </el-popconfirm> -->
           </div>
         </template>
       </el-table-column>
@@ -298,7 +284,8 @@
   };
 
   const handleSpanMethod = ({ row, column, rowIndex, columnIndex }: any) => {
-    if (columnIndex === 0) {
+    console.log(row, column, rowIndex, columnIndex);
+    if (columnIndex === 0 || columnIndex === 4) {
       if (row.isFirstRow) {
         const rowSpan =
           termList.value.find((term: any) => term.termCode === row.termCode)

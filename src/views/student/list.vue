@@ -121,9 +121,24 @@
           <el-input v-model="formData.stuHouse" placeholder="请输入house信息" />
         </el-form-item>
         <el-form-item label="班级" prop="stuClass">
-          <el-input v-model="formData.stuClass" placeholder="请输入在读班级" />
+          <el-select
+            v-model="formData.stuClassCodeList"
+            multiple
+            filterable
+            :remote-method="remoteMethod"
+            collapse-tags
+            collapse-tags-tooltip
+            placeholder="选择班级"
+          >
+            <el-option
+              v-for="item in gradeOptions"
+              :key="item.code"
+              :label="`${item.gradeName}(${DictEnum[item.classType]})`"
+              :value="item.code"
+            />
+          </el-select>
         </el-form-item>
-        <el-form-item label="教师编号" prop="teacherCode">
+        <!-- <el-form-item label="教师编号" prop="teacherCode">
           <el-input
             :value="`${teacherSelectData.userCode ? teacherSelectData.userName + '（' + teacherSelectData.userCode + '）' : ''}`"
             placeholder="请选择教师"
@@ -133,7 +148,7 @@
               <el-button @click="openTeacherSelectInForm">选择</el-button>
             </template>
           </el-input>
-        </el-form-item>
+        </el-form-item> -->
         <el-form-item label="备注" prop="remark">
           <el-input
             type="textarea"
@@ -148,45 +163,6 @@
           <el-button type="primary" @click="handleSubmit">确定</el-button>
         </span>
       </template>
-    </el-dialog>
-
-    <!-- 选择教师弹窗 -->
-    <el-dialog
-      title="选择教师"
-      v-model="teacherSelectVisible"
-      width="800px"
-      :close-on-click-modal="false"
-    >
-      <div style="display: flex; gap: 10px; margin-bottom: 15px">
-        <el-input
-          v-model="teacherQuery.keyWord"
-          placeholder="请输入教师姓名"
-          style="width: 200px"
-        />
-        <el-button type="primary" @click="handleSearchTeacher">搜索</el-button>
-      </div>
-
-      <el-table
-        :data="teacherList"
-        height="400"
-        @row-click="handleSelectTeacher"
-      >
-        <el-table-column prop="userCode" label="教师编号" />
-        <el-table-column prop="userName" label="姓名" />
-        <el-table-column prop="teacherEnName" label="英文名" />
-        <el-table-column prop="userTel" label="联系电话" />
-        <el-table-column prop="userMail" label="邮箱" />
-        <el-table-column prop="remark" label="备注" />
-      </el-table>
-
-      <el-pagination
-        :current-page="teacherQuery.pageNum"
-        :page-size="teacherQuery.pageSize"
-        :total="teacherTotal"
-        @current-change="getTeacherList"
-        layout="total, prev, pager, next"
-        style="margin-top: 15px"
-      />
     </el-dialog>
 
     <!-- Student Detail Drawer -->
@@ -259,7 +235,7 @@
 <script setup lang="ts">
   import { reactive, onMounted, ref } from "vue";
   import { StudentService } from "@/api/studentApi";
-  import { UserService } from "@/api/usersApi";
+  import { GradeService } from "@/api/gradeApi";
   import { ElMessage } from "element-plus";
 
   const studentList = ref([]);
@@ -272,13 +248,7 @@
     stuClass: "",
     stuGrade: "",
   });
-  const teacherList = ref([]);
-  const teacherTotal = ref(0);
-  const teacherQuery = reactive({
-    pageNum: 1,
-    pageSize: 10,
-    keyWord: "",
-  });
+
   const isLoading = ref(false);
   const dialogVisible = ref(false);
   const dialogTitle = ref("新增学生");
@@ -312,16 +282,37 @@
     parents: [],
   });
 
-  // 教师选择相关变量
-  const teacherSelectVisible = ref(false);
-  const teacherSelectData = ref({
-    userCode: "",
-    userName: "",
-    teacherEnName: "",
-    userTel: "",
-    userMail: "",
-    remark: "",
-  });
+  const gradeList = ref<
+    {
+      className: string;
+      classType: "CLASS_SYSTEM" | "RUNNING_SYSTEM";
+      code: string;
+      ctime: string;
+      deputyHeadCode: string;
+      deputyHeadName: string;
+      gradeName: string;
+      headTeacherCode: string;
+      headTeacherName: string;
+      remark: string;
+    }[]
+  >([]);
+  const gradeOptions = ref<
+    {
+      className: string;
+      classType: string;
+      code: string;
+      ctime: string;
+      deputyHeadCode: string;
+      deputyHeadName: string;
+      gradeName: string;
+      headTeacherCode: string;
+      headTeacherName: string;
+      remark: string;
+    }[]
+  >([]);
+
+  const DictEnum = { CLASS_SYSTEM: "班级制", RUNNING_SYSTEM: "跑班制" };
+
   const getStudentList = async () => {
     isLoading.value = true;
     const res = await StudentService.queryStoresStudentList(studentQuery);
@@ -398,6 +389,16 @@
   };
   const handleSubmit = async () => {
     try {
+      const filterCLASS_SYSTEM = gradeList.value.filter((grade) => {
+        return grade.classType === "CLASS_SYSTEM";
+      });
+      const filterFormdataCLASS_SYSTEM = filterCLASS_SYSTEM.filter((item) => {
+        return formData.stuClassCodeList.includes(item.code);
+      });
+      if (filterFormdataCLASS_SYSTEM.length > 1) {
+        ElMessage.error("最多只能选择一个班级制的班级");
+        return;
+      }
       if (dialogTitle.value === "新增学生") {
         const res = await StudentService.addStudent(formData);
         if (res.code === 0) {
@@ -419,39 +420,28 @@
     }
   };
 
-  // 打开选择教师弹窗（在表单中）
-  const openTeacherSelectInForm = async () => {
-    teacherSelectVisible.value = true;
-    await getTeacherList();
+  const queryGradeList = () => {
+    GradeService.getGradeList({ pageNum: 1, pageSize: 10000 }).then((res) => {
+      gradeList.value = res.data.list;
+      gradeOptions.value = res.data.list;
+    });
   };
 
-  // 搜索教师
-  const handleSearchTeacher = async () => {
-    teacherQuery.pageNum = 1;
-    await getTeacherList();
-  };
-
-  // 获取教师列表
-  const getTeacherList = async () => {
-    try {
-      const res = await UserService.queryStoreUserList(teacherQuery);
-      teacherList.value = res.data?.list || [];
-      teacherTotal.value = res.data?.total || 0;
-    } catch (error) {
-      console.error(error);
-      ElMessage.error("获取教师列表失败");
+  const remoteMethod = (query: string) => {
+    if (query) {
+      setTimeout(() => {
+        gradeOptions.value = gradeList.value.filter((item: any) => {
+          return item.gradeName.toLowerCase().includes(query.toLowerCase());
+        });
+      }, 200);
+    } else {
+      gradeOptions.value = gradeList.value;
     }
-  };
-
-  // 选择教师
-  const handleSelectTeacher = (row: any) => {
-    formData.teacherCode = row.userCode;
-    teacherSelectVisible.value = false;
-    teacherSelectData.value = row;
   };
 
   onMounted(() => {
     getStudentList();
+    queryGradeList();
   });
 </script>
 
