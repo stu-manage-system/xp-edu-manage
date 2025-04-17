@@ -1,3 +1,5 @@
+<!-- @format -->
+
 <template>
   <div class="page-content">
     <el-row :gutter="15">
@@ -24,7 +26,7 @@
       <el-table-column label="周数" prop="weekNum" />
       <el-table-column label="开始时间" prop="startTime" />
       <el-table-column label="结束时间" prop="endTime" />
-      <el-table-column label="操作" width="300px" fixed="right">
+      <el-table-column label="操作" width="300px" fixed="right" prop="action">
         <template #default="scope">
           <div style="display: flex; align-items: center">
             <el-button
@@ -285,7 +287,7 @@
 
   const handleSpanMethod = ({ row, column, rowIndex, columnIndex }: any) => {
     console.log(row, column, rowIndex, columnIndex);
-    if (columnIndex === 0 || columnIndex === 4) {
+    if (column.property === "termName" || column.property === "action") {
       if (row.isFirstRow) {
         const rowSpan =
           termList.value.find((term: any) => term.termCode === row.termCode)

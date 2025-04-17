@@ -1,3 +1,5 @@
+<!-- @format -->
+
 <template>
   <div class="page-content">
     <art-table
@@ -57,13 +59,17 @@
             disabled
           />
         </el-form-item>
-        <el-form-item label="审批意见">
+        <el-form-item label="审批意见" required>
           <el-input v-model="approvalForm.remark" type="textarea" />
         </el-form-item>
         <el-form-item label="是否为最后节点">
           <el-switch v-model="approvalForm.isEndNode" />
         </el-form-item>
-        <el-form-item label="下一个审批人" v-if="!approvalForm.isEndNode">
+        <el-form-item
+          label="下一个审批人"
+          v-if="!approvalForm.isEndNode"
+          required
+        >
           <el-input
             v-model="approvalForm.approvalPerson"
             placeholder="请选择下一个审批人"
@@ -76,8 +82,18 @@
         </el-form-item>
       </el-form>
       <template #footer>
-        <el-button @click="dialogVisible = false">取消</el-button>
-        <el-button type="primary" @click="submitApproval">确定</el-button>
+        <el-button
+          type="danger"
+          @click="submitApproval('reject')"
+          :loading="isSubmitLoading"
+          >拒绝</el-button
+        >
+        <el-button
+          type="primary"
+          @click="submitApproval('agree')"
+          :loading="isSubmitLoading"
+          >同意</el-button
+        >
       </template>
     </el-dialog>
 
@@ -131,13 +147,14 @@
   });
 
   const isLoading = ref(false);
+  const isSubmitLoading = ref(false);
 
   const dialogVisible = ref(false);
   const approvalForm = reactive({
     flowCode: "",
     taskId: "",
     status: "",
-    isEndNode: true,
+    isEndNode: false,
     baseInfo: {
       title: "",
       flowCode: "",
@@ -192,14 +209,30 @@
     currentApprovalInfo.value = row;
   };
 
-  const submitApproval = async () => {
+  const submitApproval = async (type: string) => {
+    isSubmitLoading.value = true;
     try {
+      if (approvalForm.isEndNode && !approvalForm.approvalPerson) {
+        ElMessage.error("请选择下一个审批人");
+        return;
+      }
+      if (!approvalForm.isEndNode && !approvalForm.remark) {
+        ElMessage.error("请输入审批意见");
+        return;
+      }
+      if (type === "agree") {
+        approvalForm.status = "AGREE";
+      } else {
+        approvalForm.status = "REJECT";
+      }
       await ApprovalService.approval(approvalForm);
       dialogVisible.value = false;
       getStudentList();
       ElMessage.success("审批成功");
     } catch (error) {
       ElMessage.error("审批失败");
+    } finally {
+      isSubmitLoading.value = false;
     }
   };
 
