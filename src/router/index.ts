@@ -307,6 +307,14 @@ const allRoutes = [
         },
       },
       {
+        path: "/teachingManage/classRoom",
+        name: "ClassRoom",
+        component: () => import("@views/classRoom/index.vue"),
+        meta: {
+          title: "教室管理",
+        },
+      },
+      {
         path: "/teachingManage/courseSystem",
         name: "CourseSystem",
         component: () => import("@views/courseSystem/index.vue"),

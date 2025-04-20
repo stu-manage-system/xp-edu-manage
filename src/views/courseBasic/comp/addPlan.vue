@@ -151,6 +151,7 @@ const handleSubmit = async () => {
 
 // 取消操作
 const handleCancel = () => {
+  loading.value = false;
   emit("update:visible", false);
   formRef.value?.resetFields();
 };
@@ -159,7 +160,11 @@ const handleCancel = () => {
 watch(
   () => props.visible,
   async (val) => {
-    props.dialogType === "edit" && (loading.value = true);
+    if (props.dialogType === "edit") {
+      loading.value = true;
+    } else {
+      loading.value = false;
+    }
     if (val) {
       await getCourseSystemList();
     }
@@ -172,12 +177,12 @@ watch(
         courseCode: props.rowData.courseCode
       });
       if (res.code === 0) {
+        loading.value = false;
         formData.courseName = res.data.courseName;
         formData.courseSystemCode = res.data.courseSystemCode;
         formData.remark = res.data.remark;
         formData.courseCode = res.data.courseCode;
       }
-      props.dialogType === "edit" && (loading.value = false);
     }
   }
 );

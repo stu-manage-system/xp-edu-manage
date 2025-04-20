@@ -35,16 +35,17 @@ export class TeachPlanService {
   }
 
   // 获取周计划列表
-  static queryWeekPlanList() {
-    return request.get<BaseResult>({
+  static queryWeekPlanList(data: any) {
+    return request.post<BaseResult>({
       url: "/weekPlan/getList",
+      data,
     });
   }
 
   // 查询周计划详情
   static queryWeekPlanDetail(params: any) {
     return request.get<BaseResult>({
-      url: `/weekPlan/getDetail/`,
+      url: `/weekPlan/getDetail`,
       params,
     });
   }
@@ -52,7 +53,7 @@ export class TeachPlanService {
   // 添加周计划
   static addWeekPlan(data: any) {
     return request.post<BaseResult>({
-      url: "/weekPlan/add",
+      url: "/weekPlan/addWeekPlan",
       data,
     });
   }
@@ -60,7 +61,7 @@ export class TeachPlanService {
   // 修改周计划
   static updateWeekPlan(data: any) {
     return request.post<BaseResult>({
-      url: "/weekPlan/update",
+      url: "/weekPlan/updateWeekPlan",
       data,
     });
   }

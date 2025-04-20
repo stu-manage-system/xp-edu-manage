@@ -8,27 +8,37 @@
               v-model="searchForm.userCode"
               placeholder="请选择教师"
               class="fixed-width-input"
+              filterable
+              remote
+              remote-show-suffix
+              clearable
+              :remote-method="remoteMethod"
             >
-              <el-option label="徐清妍" value="徐清妍" />
+              <el-option
+                v-for="item in teacherList"
+                :key="item.userCode"
+                :label="item.userName"
+                :value="item.userCode"
+              />
             </el-select>
           </el-form-item>
-          <el-form-item label="日期">
-            <el-date-picker
-              v-model="searchForm.dateRange"
-              type="daterange"
-              range-separator="至"
-              start-placeholder="开始日期"
-              end-placeholder="结束日期"
-              class="fixed-width-input"
-            />
-          </el-form-item>
-          <el-form-item label="科目">
+          <el-form-item label="课程">
             <el-select
               v-model="searchForm.subjectName"
-              placeholder="请选择科目"
+              placeholder="请选择课程"
               class="fixed-width-input"
+              filterable
+              remote
+              remote-show-suffix
+              clearable
+              :remote-method="remoteMethodSubject"
             >
-              <el-option label="艺术" value="艺术" />
+              <el-option
+                v-for="item in subjectList"
+                :key="item.courseCode"
+                :label="item.courseName"
+                :value="item.courseCode"
+              />
             </el-select>
           </el-form-item>
           <el-form-item label="年级/班级">
@@ -36,14 +46,24 @@
               v-model="searchForm.gradeName"
               placeholder="请选择年级/班级"
               class="fixed-width-input"
+              clearable
+              :remote-method="remoteMethodGrade"
+              filterable
+              remote
+              remote-show-suffix
             >
-              <el-option label="高级年级" value="高级年级" />
+              <el-option
+                v-for="item in gradeList"
+                :key="item.gradeCode"
+                :label="item.gradeName"
+                :value="item.gradeCode"
+              />
             </el-select>
           </el-form-item>
           <div class="button-group">
             <el-button type="primary" @click="handleSearch">搜索</el-button>
             <el-button type="success" @click="handleExport">导出</el-button>
-            <el-button type="primary" @click="handleAdd({}, 'add')"
+            <el-button type="primary" @click="showDialog({}, 'add')"
               >新增</el-button
             >
           </div>
@@ -62,35 +82,52 @@
       @size-change="handleSizeChange"
       :objectSpanMethod="objectSpanMethod"
     >
-      <el-table-column label="序号" type="index" width="80" align="center" />
-      <el-table-column label="教师" prop="teacher" align="center" />
+      <el-table-column label="序号" prop="index" width="80" align="center" />
+      <el-table-column label="教师" prop="userName" align="center" />
       <el-table-column label="年级" prop="gradeName" align="center" />
       <el-table-column label="班级" prop="className" align="center" />
-      <el-table-column label="开始日期" prop="startTime" align="center" />
-      <el-table-column label="结束日期" prop="endTime" align="center" />
-      <el-table-column label="科目" prop="subjectName" align="center" />
+      <el-table-column
+        label="开始日期"
+        prop="startTime"
+        align="center"
+        width="120"
+        show-overflow-tooltip
+      />
+      <el-table-column
+        label="结束日期"
+        prop="endTime"
+        align="center"
+        width="120"
+        show-overflow-tooltip
+      />
+      <el-table-column label="课程" prop="subjectName" align="center" />
       <el-table-column label="周计划明细" align="center">
         <el-table-column
-          label="周几"
-          prop="timeSlot"
-          width="150"
+          label="工作日"
+          prop="weekday"
+          width="120"
           align="center"
         />
         <el-table-column
           label="课时"
-          prop="description"
-          width="150"
+          prop="period"
+          width="120"
           align="center"
         />
         <el-table-column
           label="内容"
           prop="content"
-          width="150"
+          width="120"
           align="center"
         />
       </el-table-column>
-      <el-table-column label="操作人" prop="operator" align="center" />
-      <el-table-column label="更新时间" prop="updateTime" align="center" />
+      <el-table-column
+        label="更新时间"
+        prop="ctime"
+        align="center"
+        width="150"
+        show-overflow-tooltip=""
+      />
       <el-table-column label="操作" width="200" align="center" fixed="right">
         <template #default="{ row }">
           <el-button
@@ -138,10 +175,14 @@
 
 <script setup>
 import { CourseService } from "@/api/courseApi";
+import { UserService } from "@/api/usersApi";
+import { GradeService } from "@/api/gradeApi";
 import { Delete, EditPen } from "@element-plus/icons-vue";
 import { ElMessage } from "element-plus";
-import { nextTick, reactive, ref } from "vue";
+import { nextTick, reactive, ref, onMounted } from "vue";
 import AddWeek from "./comp/addWeek.vue";
+import { debounce } from "lodash";
+import { TeachPlanService } from "@/api/teachPlan";
 
 const isLoading = ref(false);
 const total = ref(0);
@@ -155,55 +196,12 @@ const searchForm = reactive({
   gradeName: ""
 });
 
-const tableData = ref([
-  {
-    id: 1,
-    teacher: "徐清妍",
-    gradeName: "高级年级",
-    className: "高级班级",
-    startTime: "2025-03-09",
-    endTime: "2025-03-09",
-    subjectName: "艺术",
-    timeSlot: "1st 10 mins",
-    description: "材料选择",
-    content: "内容选择1",
-    operator: "徐清妍",
-    updateTime: "2025-03-09"
-  },
-  {
-    id: 1, // 相同 id 表示同一组数据
-    teacher: "徐清妍",
-    gradeName: "高级年级",
-    className: "高级班级",
-    startTime: "2025-03-09",
-    endTime: "2025-03-09",
-    subjectName: "艺术",
-    timeSlot: "2nd 10 mins",
-    description: "内容选择1",
-    content: "内容选择2",
-    operator: "徐清妍",
-    updateTime: "2025-03-09"
-  },
-  {
-    id: 1,
-    teacher: "徐清妍",
-    gradeName: "高级年级",
-    className: "高级班级",
-    startTime: "2025-03-09",
-    endTime: "2025-03-09",
-    subjectName: "艺术",
-    timeSlot: "3rd 10 mins",
-    description: "内容选择2",
-    content: "内容选择3",
-    operator: "徐清妍",
-    updateTime: "2025-03-09"
-  }
-]);
+const tableData = ref([]);
 
 // 对话框控制
 const dialogVisible = ref(false);
 const dialogType = ref("add");
-const addCourseRef = ref(null);
+const addWeekPlanRef = ref(null);
 const courseId = ref(null);
 // 处理单元格合并
 const objectSpanMethod = ({ row, column, rowIndex, columnIndex }) => {
@@ -252,28 +250,79 @@ const objectSpanMethod = ({ row, column, rowIndex, columnIndex }) => {
   }
 };
 
+const doSearch = debounce(() => {
+  handleSearch();
+}, 300);
+
 // 搜索方法
 const handleSearch = async () => {
-  // TODO: 实现搜索逻辑
-  const res = await CourseService.queryCourseList();
-  if (res.code === 200) {
-    tableData.value = res.data.list;
-    total.value = res.data.total;
+  isLoading.value = true;
+  try {
+    const res = await TeachPlanService.queryWeekPlanList({
+      pageNum: currentPage.value,
+      pageSize: pageSize.value,
+      ...searchForm
+    });
+    if (res.code === 0) {
+      let flattenedData = [];
+      let count = 0;
+      res.data.list.forEach((item) => {
+        count++;
+        let weekPlanDetailArray = [];
+        try {
+          weekPlanDetailArray = JSON.parse(item.weekPlanDetail || "[]");
+          if (!Array.isArray(weekPlanDetailArray)) {
+            weekPlanDetailArray = []; // 确保是数组
+          }
+        } catch (e) {
+          console.error("解析 weekPlanDetail 失败:", e);
+          weekPlanDetailArray = [];
+        }
+
+        if (weekPlanDetailArray.length === 0) {
+          flattenedData.push({
+            ...item,
+            id: item.weekCode, // 使用 courseCode 作为 id
+            weekday: "",
+            period: "",
+            content: "",
+            weekPlanDetailArray: []
+          });
+        } else {
+          weekPlanDetailArray.forEach((context) => {
+            flattenedData.push({
+              index: count,
+              ...item,
+              id: item.weekCode, // 使用 courseCode 作为 id
+              weekday: context.weekday,
+              period: context.period,
+              content: context.content,
+              weekPlanDetailArray: weekPlanDetailArray
+            });
+          });
+        }
+      });
+      tableData.value = flattenedData;
+      total.value = res.data.total;
+    }
+  } catch (error) {
+    console.error("获取数据失败:", error);
+  } finally {
+    isLoading.value = false;
   }
 };
 
 // 分页方法
 const handlePageChange = (page) => {
-  // TODO: 实现分页逻辑
   currentPage.value = page;
-  handleSearch();
+  doSearch();
 };
 
 // 分页方法
 const handleSizeChange = (size) => {
-  // TODO: 实现分页逻辑
+  currentPage.value = 1;
   pageSize.value = size;
-  handleSearch();
+  doSearch();
 };
 
 // 导出方法
@@ -286,12 +335,12 @@ const showDialog = (row, type) => {
   console.log("row", row);
   dialogType.value = type;
   dialogVisible.value = true;
-  courseId.value = row.id;
+  courseId.value = row.weekCode;
   nextTick(() => {
     if (type === "edit") {
-      addCourseRef.value?.getCourseDetail(row.id);
+      addWeekPlanRef.value?.getWeekPlanDetail(row.weekCode);
     } else {
-      addCourseRef.value?.getCourseDetail();
+      addWeekPlanRef.value?.getWeekPlanDetail();
     }
   });
 };
@@ -301,21 +350,11 @@ const closeDialog = () => {
   dialogVisible.value = false;
 };
 
-// 新增方法
-const handleAdd = () => {
-  showDialog("add");
-};
-
-// 修改方法
-const handleEdit = (row) => {
-  showDialog("edit", row);
-};
-
 // 删除方法
 const handleDelete = async (row) => {
   try {
-    const res = await CourseService.deleteCourse(row.id);
-    if (res.code === 200) {
+    const res = await TeachPlanService.deleteWeekPlan(row.weekCode);
+    if (res.code === 0) {
       ElMessage.success("删除成功");
       handleSearch();
     }
@@ -323,6 +362,41 @@ const handleDelete = async (row) => {
     ElMessage.error("删除失败");
   }
 };
+
+const teacherList = ref([]);
+const subjectList = ref([]);
+const gradeList = ref([]);
+const remoteMethod = async (query) => {
+  const res = await UserService.queryStoreUserList({
+    pageNum: 1,
+    pageSize: 10000,
+    keyWord: query
+  });
+  teacherList.value = res.data.list;
+};
+const remoteMethodSubject = async (query) => {
+  const res = await CourseService.queryCourseBasicList({
+    pageNum: 1,
+    pageSize: 10000,
+    courseName: query
+  });
+  subjectList.value = res.data.list;
+};
+const remoteMethodGrade = async (query) => {
+  const res = await GradeService.getGradeList({
+    pageNum: 1,
+    pageSize: 10000,
+    keyWord: query
+  });
+  gradeList.value = res.data.list.map((item) => ({
+    gradeCode: item.code,
+    gradeName: item.gradeName + "/" + item.className
+  }));
+};
+
+onMounted(() => {
+  handleSearch();
+});
 </script>
 
 <style scoped lang="scss">
@@ -332,7 +406,6 @@ const handleDelete = async (row) => {
 
 .search-bar {
   display: flex;
-  justify-content: center;
   align-items: flex-start;
   margin-bottom: 20px;
 
@@ -357,6 +430,16 @@ const handleDelete = async (row) => {
 }
 
 :deep(.el-dialog__body) {
-  padding: 0 !important;
+  padding: 0;
+}
+
+:deep(.any-table .el-table td:first-of-type) {
+  padding-left: 0 !important;
+}
+:deep(.any-table .el-table td:last-of-type) {
+  padding-right: 0 !important;
+}
+:deep(.any-table .el-table tr) {
+  height: 47px !important;
 }
 </style>
