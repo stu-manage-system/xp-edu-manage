@@ -333,43 +333,6 @@ const allRoutes = [
     ],
   },
   {
-    path: "/member",
-    component: Home,
-    name: "Member",
-    meta: {
-      title: "会员中心",
-    },
-    children: [
-      {
-        path: "/member/card",
-        name: "MemberCard",
-        component: () => import("@views/member/member-card/index.vue"),
-        meta: {
-          title: "会员卡管理",
-        },
-        roles: ["admin", "company"],
-      },
-      {
-        path: "/member/manage",
-        name: "MemberManage",
-        component: () => import("@views/member/member-manage/index.vue"),
-        meta: {
-          title: "会员管理",
-        },
-        roles: ["admin", "company"],
-      },
-      {
-        path: "/member/course",
-        name: "Course",
-        component: () => import("@views/member/course.vue"),
-        meta: {
-          title: "课程管理",
-        },
-        roles: ["admin", "company"],
-      },
-    ],
-  },
-  {
     path: "/salary",
     component: Home,
     name: "SalaryManage",
