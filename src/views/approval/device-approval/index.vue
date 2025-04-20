@@ -71,7 +71,11 @@
           required
         >
           <el-input
-            v-model="approvalForm.approvalPerson"
+            :value="
+              approvalForm.approvalPerson
+                ? `${selectedUser.userName}(${approvalForm.approvalPerson})`
+                : ''
+            "
             placeholder="请选择下一个审批人"
             disabled
           >
@@ -180,6 +184,7 @@
     pageSize: 10,
     userName: "",
   });
+  const selectedUser = ref<any>(null);
 
   const getStudentList = async () => {
     isLoading.value = true;
@@ -259,6 +264,7 @@
 
   const handleSelectUser = (row: any) => {
     approvalForm.approvalPerson = row.userCode;
+    selectedUser.value = row;
     userSelectVisible.value = false;
   };
 

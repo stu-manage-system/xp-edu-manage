@@ -39,8 +39,13 @@
       <el-table-column label="手机号" prop="stuTel" width="180px" />
       <el-table-column label="邮箱" prop="stuMail" width="180px" />
       <el-table-column label="house信息" prop="stuHouse" width="180px" />
-      <el-table-column label="在读年级" prop="stuGrade" width="180px" />
-      <el-table-column label="在读班级" prop="stuClass" width="180px" />
+      <el-table-column label="在读班级" prop="stuClassCodeList" width="180px">
+        <template #default="{ row }">
+          {{
+            `${row.gradeName || "--"}${row.className || "--"}(${DictEnum[row.classType] || "--"})`
+          }}
+        </template>
+      </el-table-column>
       <el-table-column label="操作时间" prop="ctime" width="180px" />
       <el-table-column
         label="操作"
@@ -120,7 +125,7 @@
         <el-form-item label="house信息" prop="stuHouse">
           <el-input v-model="formData.stuHouse" placeholder="请输入house信息" />
         </el-form-item>
-        <el-form-item label="班级" prop="stuClass">
+        <el-form-item label="班级" prop="stuClassCodeList">
           <el-select
             v-model="formData.stuClassCodeList"
             multiple
@@ -133,7 +138,7 @@
             <el-option
               v-for="item in gradeOptions"
               :key="item.code"
-              :label="`${item.gradeName}(${DictEnum[item.classType]})`"
+              :label="`${item.gradeName}${item.className}(${DictEnum[item.classType]})`"
               :value="item.code"
             />
           </el-select>
@@ -198,11 +203,12 @@
         <el-descriptions-item label="House信息">{{
           detailData.stuHouse
         }}</el-descriptions-item>
-        <el-descriptions-item label="在读年级">{{
-          detailData.stuGrade
-        }}</el-descriptions-item>
         <el-descriptions-item label="在读班级">{{
-          detailData.stuClass
+          detailData.gradeClassList
+            .map((row) => {
+              return `${row.gradeName || "--"}${row.className || "--"}(${DictEnum[row.classType] || "--"})`;
+            })
+            .join(",")
         }}</el-descriptions-item>
         <el-descriptions-item label="创建时间">{{
           detailData.ctime

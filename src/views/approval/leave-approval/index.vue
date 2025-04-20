@@ -15,7 +15,17 @@
       <el-table-column label="学号" prop="stuCode" width="180px" />
       <el-table-column label="学生姓名" prop="stuName" width="180px" />
       <el-table-column label="家长姓名" prop="parName" width="180px" />
-      <el-table-column label="状态" prop="status" width="180px" />
+      <el-table-column label="状态" prop="status" width="180px">
+        <template #default="{ row }">
+          {{
+            row.status === "PENDING"
+              ? "待审核"
+              : row.status === "COMPLETE"
+                ? "通过"
+                : "驳回"
+          }}
+        </template>
+      </el-table-column>
       <el-table-column label="申请时间" prop="createTime" width="180px" />
       <el-table-column
         label="操作"
@@ -71,7 +81,11 @@
           required
         >
           <el-input
-            v-model="approvalForm.approvalPerson"
+            :value="
+              approvalForm.approvalPerson
+                ? `${selectedUser.userName}(${approvalForm.approvalPerson})`
+                : ''
+            "
             placeholder="请选择下一个审批人"
             disabled
           >
@@ -180,6 +194,7 @@
     pageSize: 10,
     userName: "",
   });
+  const selectedUser = ref<any>(null);
 
   const getStudentList = async () => {
     isLoading.value = true;
@@ -199,6 +214,7 @@
   };
   const handleApproval = (row: any) => {
     dialogVisible.value = true;
+    approvalForm.flowCode = row.flowCode;
     approvalForm.baseInfo.title = row.title;
     approvalForm.baseInfo.stuCode = row.stuCode;
     approvalForm.baseInfo.startTime = row.startTime;
@@ -212,7 +228,7 @@
   const submitApproval = async (type: string) => {
     isSubmitLoading.value = true;
     try {
-      if (approvalForm.isEndNode && !approvalForm.approvalPerson) {
+      if (!approvalForm.isEndNode && !approvalForm.approvalPerson) {
         ElMessage.error("请选择下一个审批人");
         return;
       }
@@ -259,6 +275,7 @@
 
   const handleSelectUser = (row: any) => {
     approvalForm.approvalPerson = row.userCode;
+    selectedUser.value = row;
     userSelectVisible.value = false;
   };
 
