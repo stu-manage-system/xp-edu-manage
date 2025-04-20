@@ -307,6 +307,14 @@ const allRoutes = [
         },
       },
       {
+        path: "/teachingManage/classRoom",
+        name: "ClassRoom",
+        component: () => import("@views/classRoom/index.vue"),
+        meta: {
+          title: "教室管理",
+        },
+      },
+      {
         path: "/teachingManage/courseSystem",
         name: "CourseSystem",
         component: () => import("@views/courseSystem/index.vue"),
@@ -321,43 +329,6 @@ const allRoutes = [
         meta: {
           title: "课程信息",
         },
-      },
-    ],
-  },
-  {
-    path: "/member",
-    component: Home,
-    name: "Member",
-    meta: {
-      title: "会员中心",
-    },
-    children: [
-      {
-        path: "/member/card",
-        name: "MemberCard",
-        component: () => import("@views/member/member-card/index.vue"),
-        meta: {
-          title: "会员卡管理",
-        },
-        roles: ["admin", "company"],
-      },
-      {
-        path: "/member/manage",
-        name: "MemberManage",
-        component: () => import("@views/member/member-manage/index.vue"),
-        meta: {
-          title: "会员管理",
-        },
-        roles: ["admin", "company"],
-      },
-      {
-        path: "/member/course",
-        name: "Course",
-        component: () => import("@views/member/course.vue"),
-        meta: {
-          title: "课程管理",
-        },
-        roles: ["admin", "company"],
       },
     ],
   },

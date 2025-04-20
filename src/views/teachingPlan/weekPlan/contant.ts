@@ -5,13 +5,20 @@ export interface PlanItem {
 }
 
 export interface FormData {
-  teacher: string;
-  grade: string;
-  class: string;
-  startDate: string;
-  endDate: string;
-  courseSystem: string;
-  planList: PlanItem[];
-  homework: string;
-  progress: string;
+  weekCode: string;
+  name: string;
+  userCode: string;
+  userName: string;
+  gradeName: string;
+  className: string;
+  subjectName: string;
+  startTime: string;
+  endTime: string;
+  termCode: string;
+  termName: string;
+  termNumber: string;
+  weekPlanDetail: PlanItem[];
+  subjectCount?: string;
+  processRate: number;
+  remark: string;
 }

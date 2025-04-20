@@ -31,4 +31,12 @@ export class ApiService {
       url: "/auth/getMenu",
     });
   }
+
+  // 获取学期列表
+  static getTermDetailList(params: any) {
+    return request.get<BaseResult>({
+      url: "/common/getTermDetailList",
+      params,
+    });
+  }
 }

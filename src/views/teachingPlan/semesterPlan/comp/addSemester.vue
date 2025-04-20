@@ -1,27 +1,65 @@
 <template>
   <div class="add-semester">
-    <el-form :model="formData" :rules="rules" ref="formRef" label-width="100px">
+    <el-form
+      :model="formData"
+      :rules="rules"
+      ref="formRef"
+      label-width="100px"
+      v-loading="loading"
+    >
+      <el-form-item label="教师" prop="userName" required>
+        <el-input
+          v-model="formData.userName"
+          placeholder="请选择教师"
+          readonly
+          @click="handleSelectTeacher"
+        >
+          <template #append>
+            <el-button @click="handleSelectTeacher"> 选择 </el-button>
+          </template>
+        </el-input>
+      </el-form-item>
+
+      <el-form-item label="年级/班级" prop="name" required>
+        <el-select
+          v-model="formData.name"
+          placeholder="请选择年级"
+          class="form-input"
+          @change="handleGradeChange"
+        >
+          <el-option
+            v-for="item in gradeList"
+            :key="item.value"
+            :label="item.label"
+            :value="item.value"
+          />
+        </el-select>
+      </el-form-item>
+
+      <el-form-item label="课程" prop="subjectName" required>
+        <el-select v-model="formData.subjectName" placeholder="请选择课程">
+          <el-option
+            v-for="item in courseList"
+            :key="item.value"
+            :label="item.label"
+            :value="item.value"
+          >
+          </el-option>
+        </el-select>
+      </el-form-item>
       <el-form-item label="学期名称" prop="termName">
-        <el-input v-model="formData.termName" placeholder="请输入学期名称" />
-      </el-form-item>
-
-      <el-form-item label="日期">
-        <el-date-picker
-          v-model="formData.dateTime"
-          type="daterange"
-          range-separator="至"
-          start-placeholder="开始日期"
-          end-placeholder="结束日期"
-          value-format="YYYY/MM/DD"
-        />
-      </el-form-item>
-
-      <el-form-item label="教师" prop="userCode" required>
-        <el-input v-model="formData.userCode" placeholder="请输入教师编号" />
-      </el-form-item>
-
-      <el-form-item label="课程体系" prop="gradeName" required>
-        <el-input v-model="formData.gradeName" placeholder="请输入课程体系" />
+        <el-select
+          v-model="formData.termName"
+          placeholder="请选择学期名称"
+          class="form-input"
+        >
+          <el-option
+            v-for="item in termList"
+            :key="item.value"
+            :label="item.label"
+            :value="item.value"
+          />
+        </el-select>
       </el-form-item>
 
       <div class="plan-table">
@@ -103,18 +141,33 @@
         <el-button type="primary" @click="save">保存</el-button>
       </div>
     </el-form>
+
+    <SelectTeacher
+      ref="selectTeacherRef"
+      :multiple="false"
+      @confirm="(teacher) => handleTeacherSelected(teacher)"
+    />
   </div>
 </template>
 
-<script setup>
+<script setup lang="ts">
 import { ref, reactive } from "vue";
+import SelectTeacher from "@/components/user/select.vue";
+import { GradeService } from "@/api/gradeApi";
+import { CourseService } from "@/api/courseApi";
+import { TermService } from "@/api/termApi";
 
 const formRef = ref(null);
-const formData = reactive({
+const loading = ref(false);
+const formData = ref<any>({
+  userName: "",
+  name: "",
+  subjectName: "",
   termName: "",
   dateTime: [],
   userCode: "",
-  gradeName: ""
+  gradeName: "",
+  className: ""
 });
 
 const rules = {
@@ -136,7 +189,61 @@ const tableData = ref([
     remark: ""
   }
 ]);
+const emit = defineEmits(["close"]);
+// 获取年级列表
+const gradeList = ref<{ label: string; value: string }[]>([]);
+const getGradeList = async () => {
+  const res = await GradeService.getGradeList({});
+  if (res.code === 0) {
+    gradeList.value = res.data.list.map((item) => {
+      return {
+        label: `${item.gradeName}/${item.className}`,
+        value: `${item.gradeName}/${item.className}`
+      };
+    });
+  }
+};
 
+// 获取课程体系
+const courseList = ref<{ label: string; value: string }[]>([]);
+const getCourseList = async () => {
+  const res = await CourseService.queryCourseBasicList({});
+  if (res.code === 0) {
+    courseList.value = res.data.list.map((item) => {
+      return {
+        label: item.courseName,
+        value: item.courseName
+      };
+    });
+  }
+};
+// 获取学期列表
+const termList = ref<{ label: string; value: string }[]>([]);
+const getTermList = async () => {
+  const res = await TermService.getTermList({});
+  if (res.code === 0) {
+    termList.value = res.data.list.map((item: any) => {
+      return {
+        label: item.termName,
+        value: item.termCode
+      };
+    });
+  }
+};
+const teacherList = ref({ userCode: "", userName: "" });
+const selectTeacherRef = ref(null);
+const handleSelectTeacher = () => {
+  selectTeacherRef.value?.show();
+};
+const handleTeacherSelected = (teacher: any) => {
+  formData.value.userName = teacher.userName;
+  formData.value.userCode = teacher.userCode;
+};
+const handleGradeChange = (value: string) => {
+  formData.value.name = value;
+  formData.value.className = value.split("/")[1];
+  formData.value.gradeName = value.split("/")[0];
+};
 const addRow = () => {
   tableData.value.push({
     month: "",
@@ -148,29 +255,37 @@ const addRow = () => {
   });
 };
 
-const deleteRow = (index) => {
+const deleteRow = (index: number) => {
   tableData.value.splice(index, 1);
 };
 
 const save = async () => {
   if (!formRef.value) return;
-  await formRef.value.validate((valid) => {
+  await formRef.value.validate((valid: boolean) => {
     if (valid) {
       // 保存逻辑
-      console.log("保存成功", formData, tableData.value);
+      console.log("保存成功", formData.value, tableData.value);
     }
   });
 };
 
 const cancel = () => {
   // 取消逻辑
-  formData.termName = "";
-  formData.dateTime = [];
-  formData.userCode = "";
-  formData.gradeName = "";
+  formData.value.termName = "";
+  formData.value.dateTime = [];
+  formData.value.userCode = "";
+  formData.value.gradeName = "";
   tableData.value = [];
   emit("close");
 };
+
+onMounted(async () => {
+  loading.value = true;
+  await getGradeList();
+  await getCourseList();
+  await getTermList();
+  loading.value = false;
+});
 </script>
 
 <style scoped>

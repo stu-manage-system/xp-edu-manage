@@ -63,7 +63,12 @@
           placeholder="请选择学期名称"
           class="form-input"
         >
-          <el-option label="一学期" value="一学期" />
+          <el-option
+            v-for="item in termList"
+            :key="item.value"
+            :label="item.label"
+            :value="item.value"
+          />
         </el-select>
       </el-form-item>
 
@@ -158,7 +163,7 @@
   </div>
 </template>
 
-<script setup>
+<script setup lang="ts">
 import { TeachPlanService } from "@/api/teachPlan";
 import { Delete } from "@element-plus/icons-vue";
 import { ElMessage } from "element-plus";
@@ -166,6 +171,7 @@ import { onMounted, reactive, ref, watch } from "vue";
 import SelectTeacher from "@/components/user/select.vue";
 import { GradeService } from "@/api/gradeApi";
 import { CourseService } from "@/api/courseApi";
+import { TermService } from "@/api/termApi";
 
 const props = defineProps({
   type: {
@@ -185,8 +191,8 @@ const props = defineProps({
 const emit = defineEmits(["close", "refresh"]);
 const courseForm = ref(null);
 const selectTeacherRef = ref(null);
-const gradeList = ref([]);
-const courseList = ref([]);
+const gradeList = ref<{ label: string; value: string }[]>([]);
+const courseList = ref<{ label: string; value: string }[]>([]);
 const loading = ref(false);
 // 表单数据
 const formData = reactive({
@@ -221,7 +227,7 @@ const addTimeSlot = () => {
 };
 
 // 删除时间段
-const deleteTimeSlot = (index) => {
+const deleteTimeSlot = (index: number) => {
   if (formData.subjectContext.length > 1) {
     formData.subjectContext.splice(index, 1);
   }
@@ -229,7 +235,7 @@ const deleteTimeSlot = (index) => {
 const teacherList = ref({ userCode: "", userName: "" });
 // 选择教师
 const handleSelectTeacher = () => {
-  selectTeacherRef.value.show(teacherList.value);
+  selectTeacherRef.value?.show(teacherList.value);
 };
 
 // 获取年级列表
@@ -257,19 +263,32 @@ const getCourseList = async () => {
     });
   }
 };
+// 获取学期列表
+const termList = ref<{ label: string; value: string }[]>([]);
+const getTermList = async () => {
+  const res = await TermService.getTermList({});
+  if (res.code === 0) {
+    termList.value = res.data.list.map((item: any) => {
+      return {
+        label: item.termName,
+        value: item.termCode
+      };
+    });
+  }
+};
 
-const handleGradeChange = (value) => {
+const handleGradeChange = (value: string) => {
   formData.name = value;
   formData.className = value.split("/")[1];
   formData.gradeName = value.split("/")[0];
 };
 // 教师选择确认
-const handleTeacherSelected = (teacher) => {
+const handleTeacherSelected = (teacher: any) => {
   formData.userCode = teacher.userCode;
   formData.userName = teacher.userName;
 };
 // 获取课程详情
-const getCourseDetail = async (id) => {
+const getCourseDetail = async (id: string) => {
   if (props.type === "edit" && id) {
     const res = await TeachPlanService.queryCoursePlanDetail({
       courseCode: id
@@ -298,7 +317,7 @@ const getCourseDetail = async (id) => {
     Object.keys(formData).forEach((key) => {
       formData[key] = "";
     });
-    courseForm.value.resetFields();
+    courseForm.value?.resetFields();
   }
 };
 
@@ -342,7 +361,7 @@ const handleSubmit = async () => {
         } else {
           ElMessage.error(res.message || "操作失败");
         }
-      } catch (error) {
+      } catch (error: any) {
         ElMessage.error("操作失败：" + error.message);
       }
     }
@@ -359,6 +378,7 @@ onMounted(async () => {
   loading.value = true;
   await getGradeList();
   await getCourseList();
+  await getTermList();
   loading.value = false;
 });
 

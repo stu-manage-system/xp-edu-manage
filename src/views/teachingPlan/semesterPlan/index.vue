@@ -8,8 +8,18 @@
               v-model="searchForm.userCode"
               placeholder="请选择教师"
               class="fixed-width-input"
+              clearable
+              filterable
+              remote
+              remote-show-suffix
+              :remote-method="remoteMethod"
             >
-              <el-option label="徐清妍" value="徐清妍" />
+              <el-option
+                v-for="item in teacherList"
+                :key="item.userCode"
+                :label="item.userName"
+                :value="item.userCode"
+              />
             </el-select>
           </el-form-item>
           <el-form-item label="日期">
@@ -22,13 +32,23 @@
               class="fixed-width-input"
             />
           </el-form-item>
-          <el-form-item label="科目">
+          <el-form-item label="课程">
             <el-select
               v-model="searchForm.subjectName"
-              placeholder="请选择科目"
+              placeholder="请选择课程"
               class="fixed-width-input"
+              clearable
+              filterable
+              remote
+              remote-show-suffix
+              :remote-method="remoteSubjectMethod"
             >
-              <el-option label="ESL" value="ESL" />
+              <el-option
+                v-for="item in subjectList"
+                :key="item.courseCode"
+                :label="item.courseName"
+                :value="item.courseCode"
+              />
             </el-select>
           </el-form-item>
           <div class="button-group">
@@ -114,21 +134,19 @@ import { Delete, EditPen } from "@element-plus/icons-vue";
 import { ElMessage } from "element-plus";
 import { nextTick, reactive, ref } from "vue";
 import AddSemester from "./comp/addSemester.vue";
+import { UserService } from "@/api/usersApi";
 
 const isLoading = ref(false);
 const total = ref(0);
 const currentPage = ref(1);
 const pageSize = ref(10);
-
 // 搜索表单数据
 const searchForm = reactive({
   userCode: "",
   dateRange: [],
   subjectName: ""
 });
-
 const tableData = ref([]);
-
 // 对话框控制
 const dialogVisible = ref(false);
 const dialogType = ref("add");
@@ -158,6 +176,7 @@ const handlePageChange = (page) => {
 };
 
 const handleSizeChange = (size) => {
+  currentPage.value = 1;
   pageSize.value = size;
   handleSearch();
 };
@@ -200,6 +219,24 @@ const handleDelete = async (row) => {
   } catch (error) {
     ElMessage.error("删除失败");
   }
+};
+const teacherList = ref([]);
+const remoteMethod = async (query) => {
+  const res = await UserService.queryStoreUserList({
+    pageNum: 1,
+    pageSize: 100,
+    keyWord: query
+  });
+  teacherList.value = res.data.list;
+};
+const subjectList = ref([]);
+const remoteSubjectMethod = async (query) => {
+  const res = await CourseService.queryCourseBasicList({
+    pageNum: 1,
+    pageSize: 100,
+    courseName: query
+  });
+  subjectList.value = res.data.list;
 };
 </script>
 

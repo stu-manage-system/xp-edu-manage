@@ -1,5 +1,5 @@
 <template>
-  <div class="class-plan">
+  <div class="page-content">
     <div class="search-bar">
       <el-form :inline="true" class="search-form">
         <div class="form-container">
@@ -8,8 +8,18 @@
               v-model="searchForm.userCode"
               placeholder="请选择教师"
               class="fixed-width-input"
+              clearable
+              filterable
+              remote
+              remote-show-suffix
+              :remote-method="remoteMethod"
             >
-              <el-option label="徐清妍" value="徐清妍" />
+              <el-option
+                v-for="item in teacherList"
+                :key="item.userCode"
+                :label="item.userName"
+                :value="item.userCode"
+              />
             </el-select>
           </el-form-item>
           <el-form-item label="日期">
@@ -22,13 +32,23 @@
               class="fixed-width-input"
             />
           </el-form-item>
-          <el-form-item label="科目">
+          <el-form-item label="课程">
             <el-select
               v-model="searchForm.subjectName"
-              placeholder="请选择科目"
+              placeholder="请选择课程"
               class="fixed-width-input"
+              clearable
+              filterable
+              remote
+              remote-show-suffix
+              :remote-method="remoteSubjectMethod"
             >
-              <el-option label="艺术" value="艺术" />
+              <el-option
+                :label="item.courseName"
+                :value="item.courseCode"
+                v-for="item in subjectList"
+                :key="item.courseCode"
+              />
             </el-select>
           </el-form-item>
           <div class="button-group">
@@ -135,6 +155,8 @@ import { Delete, EditPen } from "@element-plus/icons-vue";
 import { ElMessage } from "element-plus";
 import { nextTick, reactive, ref } from "vue";
 import AddCourse from "./comp/addCourse.vue";
+import { UserService } from "@/api/usersApi";
+import { CourseService } from "@/api/courseApi";
 
 const isLoading = ref(false);
 const total = ref(0);
@@ -310,14 +332,33 @@ const handleDelete = async (row) => {
   }
 };
 
+const teacherList = ref([]);
+const remoteMethod = async (query) => {
+  const res = await UserService.queryStoreUserList({
+    pageNum: 1,
+    pageSize: 100,
+    keyWord: query
+  });
+  teacherList.value = res.data.list;
+};
+const subjectList = ref([]);
+const remoteSubjectMethod = async (query) => {
+  const res = await CourseService.queryCourseBasicList({
+    pageNum: 1,
+    pageSize: 100,
+    courseName: query
+  });
+  subjectList.value = res.data.list;
+};
 onMounted(() => {
   handleSearch();
 });
 </script>
 
 <style scoped lang="scss">
-.class-plan {
-  padding: 20px;
+.page-content {
+  width: 100%;
+  height: 100%;
 }
 
 .search-bar {

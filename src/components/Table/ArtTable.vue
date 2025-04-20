@@ -4,6 +4,7 @@
       :data="props.data"
       style="width: 100%"
       :row-key="rowKey"
+      :border="border"
       v-loading="props.loading"
       :span-method="props.objectSpanMethod"
     >
@@ -66,6 +67,10 @@ const props = defineProps({
       }) => { rowspan: number; colspan: number } | number[] | undefined
     >,
     default: undefined
+  },
+  border: {
+    type: Boolean,
+    default: false
   }
 });
 const emit = defineEmits(["update:currentPage", "pageChange", "sizeChange"]);
