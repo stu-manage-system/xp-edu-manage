@@ -1,3 +1,5 @@
+/** @format */
+
 import { BaseResult } from "@/types/axios";
 import request from "@/utils/http";
 import _ from "lodash";
@@ -15,6 +17,12 @@ export class ApprovalService {
     return request.post<BaseResult>({
       url: `/approval/approval`,
       data,
+    });
+  }
+  //详情
+  static getDetail(flowCode: string) {
+    return request.get<BaseResult>({
+      url: `/approval/approvalDetail/${flowCode}`,
     });
   }
 }
