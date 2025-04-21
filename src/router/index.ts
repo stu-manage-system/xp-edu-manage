@@ -239,7 +239,7 @@ const allRoutes = [
       {
         path: "/system/menu",
         name: "Menu",
-        component: () => import("@views/system/menu.vue"),
+        component: () => import("@views/notice/index.vue"),
         meta: {
           title: "菜单管理",
         },

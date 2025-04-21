@@ -18,23 +18,35 @@
 
     <!-- 内容区域 -->
     <div class="container">
-      <router-view v-if="isRefresh && isOnline" v-slot="{ Component, route }" :style="{ minHeight }">
+      <router-view
+        v-if="isRefresh && isOnline"
+        v-slot="{ Component, route }"
+        :style="{ minHeight }"
+      >
         <!-- 路由信息，方便开发者调试 -->
         <div v-if="isOpenRouteInfo === 'true'">
           {{ route.meta }}
         </div>
         <transition :name="pageTransition" mode="out-in" appear>
           <keep-alive :max="10">
-            <component :is="Component" :key="route.path" v-if="route.meta.keepAlive" />
+            <component
+              :is="Component"
+              :key="route.path"
+              v-if="route.meta.keepAlive"
+            />
           </keep-alive>
         </transition>
         <transition :name="pageTransition" mode="out-in" appear>
-          <component :is="Component" :key="route.path" v-if="!route.meta.keepAlive" />
+          <component
+            :is="Component"
+            :key="route.path"
+            v-if="!route.meta.keepAlive"
+          />
         </transition>
       </router-view>
 
       <!-- 网络异常提示组件 -->
-      <network v-else></network>
+      <!-- <network v-else></network> -->
     </div>
 
     <!-- 个性化设置 -->
@@ -78,7 +90,7 @@ const paddingLeft = computed(() => {
 });
 // 根据是否显示工作标签来设置最小高度
 const minHeight = computed(
-  () => `calc(100vh - ${showWorkTab.value ? 120 : 75}px)`,
+  () => `calc(100vh - ${showWorkTab.value ? 120 : 75}px)`
 );
 const paddingTop = computed(() => {
   return showWorkTab.value ? "110px" : "60px";

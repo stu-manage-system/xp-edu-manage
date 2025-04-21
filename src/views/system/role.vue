@@ -11,7 +11,9 @@
       <div style="width: 12px"></div>
       <el-col :xs="24" :sm="12" :lg="6" class="el-col2">
         <el-button @click="search">搜索</el-button>
-        <el-button @click="showDialog('add', {})">新增角色</el-button>
+        <el-button type="success" @click="showDialog('add', {})"
+          >新增角色</el-button
+        >
       </el-col>
     </el-row>
 

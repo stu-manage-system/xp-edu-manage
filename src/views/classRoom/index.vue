@@ -25,8 +25,10 @@
       </el-col>
       <el-col :xs="24" :sm="12" :lg="6">
         <el-button plain @click="handleSearch">搜索</el-button>
-        <el-button plain @click="handleExport">导出</el-button>
-        <el-button plain @click="showDialog('add', '')">新增</el-button>
+        <el-button type="primary" @click="handleExport">导出</el-button>
+        <el-button type="success" @click="showDialog('add', '')"
+          >新增</el-button
+        >
       </el-col>
     </el-row>
 

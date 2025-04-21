@@ -52,9 +52,9 @@
             </el-select>
           </el-form-item>
           <div class="button-group">
-            <el-button type="primary" @click="handleSearch">搜索</el-button>
-            <el-button type="success" @click="handleExport">导出</el-button>
-            <el-button type="primary" @click="handleAdd">新增</el-button>
+            <el-button plain @click="handleSearch">搜索</el-button>
+            <el-button type="primary" @click="handleExport">导出</el-button>
+            <el-button type="success" @click="handleAdd">新增</el-button>
           </div>
         </div>
       </el-form>
