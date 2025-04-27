@@ -2,6 +2,29 @@
 
 <template>
   <div class="page-content">
+    <el-row :gutter="15">
+      <el-col :xs="19" :sm="12" :lg="6">
+        <el-input
+          v-model="approvalQuery.title"
+          placeholder="请输入标题搜索"
+          clearable
+        ></el-input>
+      </el-col>
+      <el-col :xs="19" :sm="12" :lg="6">
+        <el-select
+          v-model="approvalQuery.status"
+          placeholder="请选择状态"
+          clearable
+        >
+          <el-option label="待审核" value="PENDING" />
+          <el-option label="通过" value="COMPLETE" />
+          <el-option label="驳回" value="REJECT" />
+        </el-select>
+      </el-col>
+      <el-col :xs="4" :sm="12" :lg="4">
+        <el-button @click="handleSearch">搜索</el-button>
+      </el-col>
+    </el-row>
     <art-table
       :data="studentList"
       :total="total"
@@ -46,29 +69,54 @@
 
     <!-- Add Approval Dialog -->
     <el-dialog v-model="dialogVisible" title="审批" width="50%">
-      <el-form :model="approvalForm" label-width="120px">
-        <el-form-item label="标题">
-          <el-input v-model="approvalForm.baseInfo.title" disabled />
-        </el-form-item>
-        <el-form-item label="学号">
-          <el-input v-model="approvalForm.baseInfo.stuCode" disabled />
-        </el-form-item>
-        <el-form-item label="学生姓名">
-          <el-input :value="currentApprovalInfo.stuName" disabled />
-        </el-form-item>
-        <el-form-item label="开始时间">
-          <el-input v-model="approvalForm.baseInfo.startTime" disabled />
-        </el-form-item>
-        <el-form-item label="结束时间">
-          <el-input v-model="approvalForm.baseInfo.endTime" disabled />
-        </el-form-item>
-        <el-form-item label="请假原因">
-          <el-input
-            v-model="approvalForm.baseInfo.context"
-            type="textarea"
-            disabled
-          />
-        </el-form-item>
+      <el-descriptions :column="1" border v-loading="approvalDetailLoading">
+        <el-descriptions-item label="标题">{{
+          approvalDetail?.title
+        }}</el-descriptions-item>
+        <el-descriptions-item label="申请时间">{{
+          approvalDetail?.createTime
+        }}</el-descriptions-item>
+        <el-descriptions-item label="申请人">{{
+          approvalDetail?.stuName
+        }}</el-descriptions-item>
+        <el-descriptions-item label="审批记录">
+          <div
+            v-for="(record, index) in approvalDetail?.approvalRecordList"
+            :key="index"
+            style="max-height: 200px; overflow-y: auto"
+          >
+            <p>
+              审批人: {{ record.approvalPersonName || record.approvalPerson }}
+            </p>
+            <p>审批时间: {{ record.createTime }}</p>
+            <p>
+              审批状态:
+              {{ record.currentStatus === "COMPLETE" ? "已完成" : "待审核" }}
+            </p>
+            <p>审批意见: {{ record.remark || "无" }}</p>
+            <el-divider
+              v-if="index !== approvalDetail?.approvalRecordList.length - 1"
+            />
+          </div>
+        </el-descriptions-item>
+        <el-descriptions-item label="抄送记录">
+          <div v-if="approvalDetail?.ccRecordList?.length">
+            <div
+              v-for="(cc, index) in approvalDetail?.ccRecordList"
+              :key="index"
+            >
+              {{ cc }}
+            </div>
+          </div>
+          <div v-else>无</div>
+        </el-descriptions-item>
+      </el-descriptions>
+
+      <el-form
+        style="margin-top: 20px"
+        :model="approvalForm"
+        label-width="120px"
+      >
         <el-form-item label="审批意见" required>
           <el-input v-model="approvalForm.remark" type="textarea" />
         </el-form-item>
@@ -90,7 +138,22 @@
             disabled
           >
             <template #append>
-              <el-button @click="openUserSelect">选择</el-button>
+              <el-button @click="openUserSelect('approval')">选择</el-button>
+            </template>
+          </el-input>
+        </el-form-item>
+        <el-form-item label="抄送人">
+          <el-input
+            :value="
+              approvalForm.ccUserCode
+                ? `${ccDetail.userName}(${approvalForm.ccUserCode})`
+                : ''
+            "
+            placeholder="请选择抄送人"
+            disabled
+          >
+            <template #append>
+              <el-button @click="openUserSelect('cc')">选择</el-button>
             </template>
           </el-input>
         </el-form-item>
@@ -155,6 +218,8 @@
   const studentList = ref([{}]);
   const total = ref(0);
   const approvalQuery = reactive({
+    title: "",
+    status: "",
     pageNum: 1,
     pageSize: 10,
     type: "STUDENT_LEAVE", //STUDENT_LEAVE,EQUIPMENT_APPROVAL
@@ -167,25 +232,16 @@
   const approvalForm = reactive({
     flowCode: "",
     taskId: "",
-    status: "",
+    action: "",
     isEndNode: false,
-    baseInfo: {
-      title: "",
-      flowCode: "",
-      type: "",
-      stuCode: "",
-      startTime: "",
-      endTime: "",
-      userCode: "",
-      context: "",
-    },
-    isApplicantNode: true,
     approvalPerson: "",
     ccUserCode: "",
     remark: "",
   });
-  //当前审批的信息
-  const currentApprovalInfo = ref<any>(null);
+  const approvalDetail = ref<any>(null);
+  const approvalDetailLoading = ref(false);
+  const ccDetail = ref<any>(null);
+  const currentAction = ref<string>("approval");
   const userSelectVisible = ref(false);
   const userList = ref([]);
   const userTotal = ref(0);
@@ -204,6 +260,11 @@
     isLoading.value = false;
   };
 
+  const handleSearch = async () => {
+    approvalQuery.pageNum = 1;
+    await getStudentList();
+  };
+
   const handlePageChange = (page: number) => {
     approvalQuery.pageNum = page;
     getStudentList();
@@ -212,17 +273,14 @@
     approvalQuery.pageSize = size;
     getStudentList();
   };
-  const handleApproval = (row: any) => {
+  const handleApproval = async (row: any) => {
     dialogVisible.value = true;
+    approvalDetailLoading.value = true;
+    const res = await ApprovalService.getDetail(row.flowCode);
+    approvalDetail.value = { ...row, ...res.data };
     approvalForm.flowCode = row.flowCode;
-    approvalForm.baseInfo.title = row.title;
-    approvalForm.baseInfo.stuCode = row.stuCode;
-    approvalForm.baseInfo.startTime = row.startTime;
-    approvalForm.baseInfo.endTime = row.endTime;
-    approvalForm.baseInfo.context = row.context;
-    approvalForm.flowCode = row.flowCode;
-    approvalForm.taskId = row.taskId;
-    currentApprovalInfo.value = row;
+    approvalForm.taskId = res.data.taskId;
+    approvalDetailLoading.value = false;
   };
 
   const submitApproval = async (type: string) => {
@@ -237,14 +295,17 @@
         return;
       }
       if (type === "agree") {
-        approvalForm.status = "AGREE";
+        approvalForm.action = "AGREE";
       } else {
-        approvalForm.status = "REJECT";
+        approvalForm.action = "REJECT";
       }
-      await ApprovalService.approval(approvalForm);
-      dialogVisible.value = false;
-      getStudentList();
-      ElMessage.success("审批成功");
+
+      const res = await ApprovalService.approval(approvalForm);
+      if (res.code === 200) {
+        ElMessage.success("审批成功");
+        dialogVisible.value = false;
+        getStudentList();
+      }
     } catch (error) {
       ElMessage.error("审批失败");
     } finally {
@@ -252,7 +313,8 @@
     }
   };
 
-  const openUserSelect = async () => {
+  const openUserSelect = async (action: string) => {
+    currentAction.value = action;
     userSelectVisible.value = true;
     await getUserList();
   };
@@ -274,8 +336,14 @@
   };
 
   const handleSelectUser = (row: any) => {
-    approvalForm.approvalPerson = row.userCode;
-    selectedUser.value = row;
+    if (currentAction.value === "approval") {
+      approvalForm.approvalPerson = row.userCode;
+      selectedUser.value = row;
+    } else {
+      approvalForm.ccUserCode = row.userCode;
+      ccDetail.value = row;
+    }
+
     userSelectVisible.value = false;
   };
 
@@ -295,5 +363,12 @@
 
   .el-select {
     width: 100%;
+  }
+  :deep(.el-dialog) {
+    margin-top: 20px;
+    .el-dialog__body {
+      height: 100%;
+      overflow-y: auto;
+    }
   }
 </style>

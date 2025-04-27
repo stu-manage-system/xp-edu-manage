@@ -1,154 +1,317 @@
 <template>
-  <div class="page-content">
-    <el-row :gutter="15">
-      <el-col :xs="19" :sm="12" :lg="6">
-        <el-input
-          v-model="courseQuery.semester"
-          placeholder="请输入学期"
-        ></el-input>
-      </el-col>
-      <el-col :xs="4" :sm="12" :lg="4">
-        <el-button @click="handleSearch">搜索</el-button>
-        <el-button type="primary" @click="handleAdd">新增</el-button>
-      </el-col>
-    </el-row>
+  <div class="schedule-container">
+    <div class="header">
+      <div class="title">同步排课管理列表</div>
+      <div class="date">{{ currentDateTime }}</div>
+    </div>
 
-    <art-table
-      :data="courseList"
-      :total="total"
-      :current-page="courseQuery.pageNum"
-      :page-size="courseQuery.pageSize"
-      @page-change="handlePageChange"
-      @size-change="handleSizeChange"
-      :loading="isLoading"
-    >
-      <el-table-column label="学期名称" prop="semester" />
-      <el-table-column label="开始时间" prop="courseName" />
-      <el-table-column label="结束时间" prop="stuEnName" />
-      <el-table-column label="操作时间" prop="ctime" />
-      <el-table-column
-        label="操作"
-        width="300px"
-        #default="scope"
-        fixed="right"
-      >
-        <div style="display: flex; align-items: center">
-          <el-button
-            type="primary"
-            size="default"
-            @click="handleEdit(scope.row)"
-            >修改</el-button
+    <div class="schedule-table">
+      <el-scrollbar height="100%">
+        <el-table :data="scheduleData" border style="width: 100%">
+          <!-- 课时列 -->
+          <el-table-column
+            prop="timeSlot"
+            label="课时"
+            width="350"
+            fixed="left"
           >
-          <el-button
-            type="warning"
-            style="margin-left: 10px"
-            size="default"
-            @click="handleArchive(scope.row)"
-          >
-            排课
-          </el-button>
-          <el-popconfirm
-            title="确定删除吗？"
-            @confirm="handleDelete(scope.row)"
-          >
-            <template #reference>
-              <el-button type="danger" style="margin-left: 10px" size="default">
-                删除
-              </el-button>
+            <template #default="{ row }">
+              <div class="time-slot-cell">
+                <span>{{ row.timeSlot }}</span>
+                <div class="time-range">
+                  <el-time-picker
+                    v-model="row.timeRange[0]"
+                    format="HH:mm"
+                    placeholder="开始时间"
+                    size="small"
+                    style="width: 120px"
+                  />
+                  <span class="separator">-</span>
+                  <el-time-picker
+                    v-model="row.timeRange[1]"
+                    format="HH:mm"
+                    placeholder="结束时间"
+                    size="small"
+                    style="width: 120px"
+                  />
+                </div>
+              </div>
             </template>
-          </el-popconfirm>
-        </div>
-      </el-table-column>
-    </art-table>
+          </el-table-column>
 
-    <el-dialog v-model="addSemesterDialogVisible" title="新增学期" width="50%">
-      <el-form :model="addSemesterForm" label-width="100px">
-        <el-form-item label="学期名称" prop="semester">
-          <el-input
-            v-model="addSemesterForm.semester"
-            placeholder="请输入学期名称"
-          />
-        </el-form-item>
-        <el-form-item label="开始时间" prop="startTime">
-          <el-date-picker
-            v-model="addSemesterForm.startTime"
-            type="date"
-            placeholder="请选择开始时间"
-          />
-        </el-form-item>
-        <el-form-item label="结束时间" prop="endTime">
-          <el-date-picker
-            v-model="addSemesterForm.endTime"
-            type="date"
-            placeholder="请选择结束时间"
-          />
-        </el-form-item>
-      </el-form>
-    </el-dialog>
+          <!-- 星期几的列 -->
+          <el-table-column
+            v-for="day in weekDays"
+            :key="day.value"
+            :label="day.label"
+            min-width="200"
+          >
+            <template #default="{ row }">
+              <div class="course-cell" v-if="!row.isActivity">
+                <el-select
+                  v-model="row[day.value].course"
+                  placeholder="课程"
+                  size="small"
+                >
+                  <el-option label="语文" value="chinese" />
+                  <el-option label="数学" value="math" />
+                  <el-option label="英语" value="english" />
+                </el-select>
+                <el-select
+                  v-model="row[day.value].teacher"
+                  placeholder="教师"
+                  size="small"
+                >
+                  <el-option label="张老师" value="zhang" />
+                  <el-option label="李老师" value="li" />
+                </el-select>
+                <el-select
+                  v-model="row[day.value].classroom"
+                  placeholder="教室"
+                  size="small"
+                >
+                  <el-option label="101" value="101" />
+                  <el-option label="102" value="102" />
+                </el-select>
+              </div>
+              <div v-else class="activity-cell">活动时间</div>
+            </template>
+          </el-table-column>
+        </el-table>
+      </el-scrollbar>
+    </div>
+
+    <div class="footer">
+      <el-button type="primary" @click="saveSchedule">保存</el-button>
+      <el-button @click="cancel">取消</el-button>
+    </div>
   </div>
 </template>
 
 <script setup lang="ts">
-  import { ref } from "vue";
+  import { ref, onMounted } from "vue";
 
-  const courseQuery = ref({
-    semester: "",
-    pageNum: 1,
-    pageSize: 10,
+  const currentDateTime = ref("");
+
+  // 更新当前时间
+  const updateDateTime = () => {
+    const now = new Date();
+    currentDateTime.value = now.toLocaleString("zh-CN", {
+      year: "numeric",
+      month: "2-digit",
+      day: "2-digit",
+      hour: "2-digit",
+      minute: "2-digit",
+      second: "2-digit",
+      hour12: false,
+    });
+  };
+
+  // 星期定义
+  const weekDays = [
+    { label: "星期一", value: "monday" },
+    { label: "星期二", value: "tuesday" },
+    { label: "星期三", value: "wednesday" },
+    { label: "星期四", value: "thursday" },
+    { label: "星期五", value: "friday" },
+  ];
+
+  // 初始化一个时间段的数据
+  const initTimeSlotData = () => {
+    const dayData = {
+      course: "",
+      teacher: "",
+      classroom: "",
+    };
+
+    return weekDays.reduce((acc, day) => {
+      acc[day.value] = { ...dayData };
+      return acc;
+    }, {});
+  };
+
+  // 课程表数据
+  const scheduleData = ref([
+    {
+      timeSlot: "上午1",
+      timeRange: ["", ""],
+      isActivity: false,
+      ...initTimeSlotData(),
+    },
+    {
+      timeSlot: "上午2",
+      timeRange: ["", ""],
+      isActivity: false,
+      ...initTimeSlotData(),
+    },
+    {
+      timeSlot: "活动",
+      timeRange: ["", ""],
+      isActivity: true,
+      ...initTimeSlotData(),
+    },
+    {
+      timeSlot: "上午3",
+      timeRange: ["", ""],
+      isActivity: false,
+      ...initTimeSlotData(),
+    },
+    {
+      timeSlot: "上午4",
+      timeRange: ["", ""],
+      isActivity: false,
+      ...initTimeSlotData(),
+    },
+    {
+      timeSlot: "活动",
+      timeRange: ["", ""],
+      isActivity: true,
+      ...initTimeSlotData(),
+    },
+    {
+      timeSlot: "下午1",
+      timeRange: ["", ""],
+      isActivity: false,
+      ...initTimeSlotData(),
+    },
+    {
+      timeSlot: "活动",
+      timeRange: ["", ""],
+      isActivity: true,
+      ...initTimeSlotData(),
+    },
+    {
+      timeSlot: "下午2",
+      timeRange: ["", ""],
+      isActivity: false,
+      ...initTimeSlotData(),
+    },
+    {
+      timeSlot: "下午3",
+      timeRange: ["", ""],
+      isActivity: false,
+      ...initTimeSlotData(),
+    },
+    {
+      timeSlot: "下午4",
+      timeRange: ["", ""],
+      isActivity: false,
+      ...initTimeSlotData(),
+    },
+  ]);
+
+  // 保存课程表
+  const saveSchedule = () => {
+    console.log("保存课程表", scheduleData.value);
+  };
+
+  // 取消
+  const cancel = () => {
+    console.log("取消操作");
+  };
+
+  onMounted(() => {
+    updateDateTime();
+    setInterval(updateDateTime, 1000);
   });
-
-  const courseList = ref([]);
-  const total = ref(0);
-  const isLoading = ref(false);
-  const addSemesterDialogVisible = ref(false);
-  const addSemesterForm = ref({
-    semester: "",
-    startTime: "",
-    endTime: "",
-  });
-
-  const handleSearch = () => {
-    console.log(courseQuery.value);
-  };
-
-  const handleAdd = () => {
-    console.log("新增");
-  };
-
-  const handlePageChange = (pageNum: number, pageSize: number) => {
-    courseQuery.value.pageNum = pageNum;
-    courseQuery.value.pageSize = pageSize;
-    handleSearch();
-  };
-
-  const handleSizeChange = (pageSize: number) => {
-    courseQuery.value.pageSize = pageSize;
-    handleSearch();
-  };
-
-  const handleEdit = (row: any) => {
-    console.log(row);
-  };
-
-  const handleArchive = (row: any) => {
-    console.log(row);
-  };
-
-  const handleDelete = (row: any) => {
-    console.log(row);
-  };
 </script>
 
 <style lang="scss" scoped>
-  .parents-info {
-    h3 {
-      margin-bottom: 16px;
-      font-weight: 500;
-      color: #303133;
+  .schedule-container {
+    padding: 20px;
+    background-color: #fff;
+    min-height: calc(100vh - 120px) !important;
+    max-height: calc(100vh - 120px) !important;
+    overflow: hidden;
+    display: flex;
+    flex-direction: column;
+  }
+
+  .header {
+    display: flex;
+    justify-content: space-between;
+    align-items: center;
+    margin-bottom: 20px;
+    height: 50px;
+  }
+
+  .title {
+    font-size: 18px;
+    font-weight: bold;
+  }
+
+  .date {
+    color: #666;
+  }
+
+  .schedule-table {
+    flex: 1;
+    height: 0;
+    overflow: auto;
+  }
+
+  .time-slot-cell {
+    display: flex;
+    align-items: center;
+    gap: 10px;
+  }
+
+  .time-range {
+    display: flex;
+    align-items: center;
+    gap: 5px;
+
+    .el-time-picker {
+      width: 90px;
+    }
+
+    .separator {
+      color: #909399;
     }
   }
 
-  .el-select {
-    width: 100%;
+  .course-cell {
+    display: flex;
+    flex-direction: column;
+    gap: 5px;
+    padding: 5px;
+
+    .el-select {
+      width: 100%;
+    }
+  }
+
+  .activity-cell {
+    height: 100%;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    color: #909399;
+    background-color: #f5f7fa;
+    padding: 20px 0;
+  }
+
+  .footer {
+    margin-top: 20px;
+    text-align: center;
+    height: 50px;
+  }
+
+  :deep(.el-table) {
+    .el-table__cell {
+      padding: 4px;
+    }
+  }
+
+  :deep(.el-select .el-input__wrapper) {
+    padding: 0 8px;
+  }
+
+  :deep(.el-select .el-input__inner) {
+    height: 28px;
+  }
+
+  :deep(.el-scrollbar__wrap) {
+    overflow-x: hidden;
   }
 </style>

@@ -26,7 +26,21 @@
       <el-table-column label="周数" prop="weekNum" />
       <el-table-column label="开始时间" prop="startTime" />
       <el-table-column label="结束时间" prop="endTime" />
-      <el-table-column label="操作" width="300px" fixed="right" prop="action">
+      <el-table-column label="排课" width="100px" fixed="right">
+        <template #default="scope">
+          <div style="display: flex; align-items: center">
+            <el-button
+              type="warning"
+              style="margin-left: 10px"
+              size="default"
+              @click="handleArchive(scope.row)"
+            >
+              排课
+            </el-button>
+          </div>
+        </template>
+      </el-table-column>
+      <el-table-column label="操作" width="100px" fixed="right" prop="action">
         <template #default="scope">
           <div style="display: flex; align-items: center">
             <el-button
@@ -35,14 +49,6 @@
               @click="handleEdit(scope.row)"
             >
               修改
-            </el-button>
-            <el-button
-              type="warning"
-              style="margin-left: 10px"
-              size="default"
-              @click="handleArchive(scope.row)"
-            >
-              排课
             </el-button>
           </div>
         </template>
@@ -286,7 +292,6 @@
   };
 
   const handleSpanMethod = ({ row, column, rowIndex, columnIndex }: any) => {
-    console.log(row, column, rowIndex, columnIndex);
     if (column.property === "termName" || column.property === "action") {
       if (row.isFirstRow) {
         const rowSpan =
