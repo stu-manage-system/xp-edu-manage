@@ -6,79 +6,94 @@
     </div>
 
     <div class="schedule-table">
-      <el-scrollbar height="100%">
-        <el-table :data="scheduleData" border style="width: 100%">
-          <!-- 课时列 -->
-          <el-table-column
-            prop="timeSlot"
-            label="课时"
-            width="350"
-            fixed="left"
-          >
-            <template #default="{ row }">
-              <div class="time-slot-cell">
-                <span>{{ row.timeSlot }}</span>
-                <div class="time-range">
-                  <el-time-picker
-                    v-model="row.timeRange[0]"
-                    format="HH:mm"
-                    placeholder="开始时间"
-                    size="small"
-                    style="width: 120px"
-                  />
-                  <span class="separator">-</span>
-                  <el-time-picker
-                    v-model="row.timeRange[1]"
-                    format="HH:mm"
-                    placeholder="结束时间"
-                    size="small"
-                    style="width: 120px"
-                  />
-                </div>
+      <!-- <el-scrollbar height="100%"> -->
+      <el-table
+        :data="scheduleData"
+        border
+        style="width: 100%"
+        height="calc(100vh - 260px)"
+      >
+        <!-- 课时列 -->
+        <el-table-column prop="timeSlot" label="课时" width="500" fixed="left">
+          <template #default="{ row }">
+            <div class="time-slot-cell">
+              <span>{{ row.timeSlot }}</span>
+              <div class="time-range">
+                <el-time-picker
+                  v-model="row.timeRange[0]"
+                  format="HH:mm"
+                  placeholder="开始时间"
+                  size="small"
+                  style="width: 120px"
+                />
+                <span class="separator">-</span>
+                <el-time-picker
+                  v-model="row.timeRange[1]"
+                  format="HH:mm"
+                  placeholder="结束时间"
+                  size="small"
+                  style="width: 120px"
+                />
               </div>
-            </template>
-          </el-table-column>
+              <el-select
+                v-if="row.isActivity"
+                v-model="row.activity"
+                placeholder="选择活动"
+                size="small"
+                class="activity-select"
+              >
+                <el-option label="早自习" value="morning_study" />
+                <el-option label="午休" value="noon_break" />
+                <el-option label="课外活动" value="extra_activity" />
+                <el-option label="班会" value="class_meeting" />
+                <el-option label="升旗仪式" value="flag_raising" />
+              </el-select>
+            </div>
+          </template>
+        </el-table-column>
 
-          <!-- 星期几的列 -->
-          <el-table-column
-            v-for="day in weekDays"
-            :key="day.value"
-            :label="day.label"
-            min-width="200"
-          >
-            <template #default="{ row }">
-              <div class="course-cell" v-if="!row.isActivity">
-                <el-select
-                  v-model="row[day.value].course"
-                  placeholder="课程"
-                  size="small"
-                >
-                  <el-option label="语文" value="chinese" />
-                  <el-option label="数学" value="math" />
-                  <el-option label="英语" value="english" />
-                </el-select>
-                <el-select
-                  v-model="row[day.value].teacher"
-                  placeholder="教师"
-                  size="small"
-                >
-                  <el-option label="张老师" value="zhang" />
-                  <el-option label="李老师" value="li" />
-                </el-select>
-                <el-select
-                  v-model="row[day.value].classroom"
-                  placeholder="教室"
-                  size="small"
-                >
-                  <el-option label="101" value="101" />
-                  <el-option label="102" value="102" />
-                </el-select>
-              </div>
-              <div v-else class="activity-cell">活动时间</div>
-            </template>
-          </el-table-column>
-        </el-table>
-      </el-scrollbar>
+        <!-- 星期几的列 -->
+        <el-table-column
+          v-for="day in weekDays"
+          :key="day.value"
+          :label="day.label"
+          min-width="200"
+        >
+          <template #default="{ row }">
+            <div class="course-cell" v-if="!row.isActivity">
+              <el-select
+                v-model="row[day.value].course"
+                placeholder="课程"
+                size="small"
+              >
+                <el-option label="语文" value="chinese" />
+                <el-option label="数学" value="math" />
+                <el-option label="英语" value="english" />
+              </el-select>
+              <el-select
+                v-model="row[day.value].teacher"
+                placeholder="教师"
+                size="small"
+              >
+                <el-option label="张老师" value="zhang" />
+                <el-option label="李老师" value="li" />
+              </el-select>
+              <el-select
+                v-model="row[day.value].classroom"
+                placeholder="教室"
+                size="small"
+              >
+                <el-option label="101" value="101" />
+                <el-option label="102" value="102" />
+              </el-select>
+            </div>
+            <div v-else class="activity-cell">
+              {{ row.activity || "暂无活动" }}
+            </div>
+          </template>
+        </el-table-column>
+      </el-table>
+      <!-- </el-scrollbar> -->
     </div>
 
     <div class="footer">
@@ -122,6 +137,7 @@
       course: "",
       teacher: "",
       classroom: "",
+      activity: "",
     };
 
     return weekDays.reduce((acc, day) => {
@@ -136,66 +152,77 @@
       timeSlot: "上午1",
       timeRange: ["", ""],
       isActivity: false,
+      activity: "",
       ...initTimeSlotData(),
     },
     {
       timeSlot: "上午2",
       timeRange: ["", ""],
       isActivity: false,
+      activity: "",
       ...initTimeSlotData(),
     },
     {
       timeSlot: "活动",
       timeRange: ["", ""],
       isActivity: true,
+      activity: "",
       ...initTimeSlotData(),
     },
     {
       timeSlot: "上午3",
       timeRange: ["", ""],
       isActivity: false,
+      activity: "",
       ...initTimeSlotData(),
     },
     {
       timeSlot: "上午4",
       timeRange: ["", ""],
       isActivity: false,
+      activity: "",
       ...initTimeSlotData(),
     },
     {
       timeSlot: "活动",
       timeRange: ["", ""],
       isActivity: true,
+      activity: "",
       ...initTimeSlotData(),
     },
     {
       timeSlot: "下午1",
       timeRange: ["", ""],
       isActivity: false,
+      activity: "",
       ...initTimeSlotData(),
     },
     {
       timeSlot: "活动",
       timeRange: ["", ""],
       isActivity: true,
+      activity: "",
       ...initTimeSlotData(),
     },
     {
       timeSlot: "下午2",
       timeRange: ["", ""],
       isActivity: false,
+      activity: "",
       ...initTimeSlotData(),
     },
     {
       timeSlot: "下午3",
       timeRange: ["", ""],
       isActivity: false,
+      activity: "",
       ...initTimeSlotData(),
     },
     {
       timeSlot: "下午4",
       timeRange: ["", ""],
       isActivity: false,
+      activity: "",
       ...initTimeSlotData(),
     },
   ]);
@@ -268,6 +295,10 @@
     .separator {
       color: #909399;
     }
+  }
+
+  .activity-select {
+    width: 120px;
   }
 
   .course-cell {
