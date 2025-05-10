@@ -74,6 +74,14 @@ export class TeachPlanService {
   }
 
   // 获取学期计划列表
+  static getTermPlanList(data: any) {
+    return request.post<BaseResult>({
+      url: "/termPlan/getList",
+      data,
+    });
+  }
+
+  // 添加学期计划
   static addTermPlan(data: any) {
     return request.post<BaseResult>({
       url: "/termPlan/addTermPlan",

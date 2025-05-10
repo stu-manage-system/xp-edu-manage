@@ -2,11 +2,7 @@
   <div class="page-content">
     <el-row>
       <el-col :xs="24" :sm="12" :lg="6">
-        <el-input
-          v-model="searchForm.name"
-          placeholder="请输入课程体系"
-          clearable
-        ></el-input>
+        <el-input v-model="searchForm.name" placeholder="请输入课程体系" clearable></el-input>
       </el-col>
       <div style="width: 12px"></div>
       <el-col :xs="24" :sm="12" :lg="6" class="el-col2">
@@ -15,54 +11,22 @@
       </el-col>
     </el-row>
 
-    <art-table
-      :data="tableData"
-      :total="total"
-      :current-page="currentPage"
-      :page-size="pageSize"
-      @page-change="handlePageChange"
-      @size-change="handleSizeChange"
-      :loading="isLoading"
-      row-key="code"
-    >
+    <art-table :data="tableData" :total="total" :current-page="currentPage" :page-size="pageSize"
+      @page-change="handlePageChange" @size-change="handleSizeChange" :loading="isLoading" row-key="code">
       <template #default>
         <el-table-column label="课程体系" prop="name" show-overflow-tooltip />
-        <el-table-column
-          label="操作人"
-          prop="creatorName"
-          show-overflow-tooltip
-        />
+        <el-table-column label="操作人" prop="creatorName" show-overflow-tooltip />
         <el-table-column label="更新时间" prop="ctime" show-overflow-tooltip />
-        <el-table-column
-          fixed="right"
-          label="操作"
-          width="300px"
-          #default="scope"
-        >
+        <el-table-column fixed="right" label="操作" width="300px" #default="scope">
           <div style="display: flex; justify-content: flex-start">
-            <el-button
-              link
-              :icon="EditPen"
-              type="primary"
-              @click="showDialog('edit', scope.row)"
-            >
+            <el-button link :icon="EditPen" type="primary" @click="showDialog('edit', scope.row)">
               编辑
             </el-button>
-            <el-button
-              link
-              :icon="Delete"
-              style="color: #fa6962"
-              @click="deleteCourse(scope.row)"
-            >
+            <el-button link :icon="Delete" style="color: #fa6962" @click="deleteCourse(scope.row)">
               删除
             </el-button>
-            <el-button
-              link
-              :icon="Document"
-              style="color: #67c23a"
-              @click="showDialog('addSon', scope.row)"
-              v-if="scope.row.parentId === -1"
-            >
+            <el-button link :icon="Plus" style="color: #67c23a" @click="showDialog('addSon', scope.row)"
+              v-if="scope.row.parentId === -1">
               添加子类别
             </el-button>
           </div>
@@ -71,18 +35,14 @@
     </art-table>
 
     <!-- 引入子组件 -->
-    <CourseForm
-      v-model:visible="dialogVisible"
-      :type="dialogType"
-      :course-data="currentCourse"
-      @success="handleSuccess"
-    />
+    <CourseForm v-model:visible="dialogVisible" :type="dialogType" :course-data="currentCourse"
+      @success="handleSuccess" />
   </div>
 </template>
 
 <script setup lang="ts">
 import { ref, reactive } from "vue";
-import { Delete, EditPen, Document } from "@element-plus/icons-vue";
+import { Delete, EditPen, Plus } from "@element-plus/icons-vue";
 import { ElMessage, ElMessageBox } from "element-plus";
 import CourseForm from "./comp/addSystem.vue";
 import { CourseService } from "@/api/courseApi";

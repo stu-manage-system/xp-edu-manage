@@ -15,7 +15,7 @@ NProgress.configure({
   speed: 600, // 递增进度条的速度
   showSpinner: false, // 是否显示加载ico
   trickleSpeed: 200, // 自动递增间隔
-  parent: "body", //指定进度条的父容器
+  parent: "body" //指定进度条的父容器
 });
 
 // 路由项扩展
@@ -30,7 +30,7 @@ export const HOME_PAGE = "/dashboard";
 const routes = [
   {
     path: "/",
-    redirect: "/login",
+    redirect: "/login"
   },
   {
     path: "/dashboard",
@@ -44,18 +44,18 @@ const routes = [
           title: "首页",
           title_en: "Home",
           icon: "\ue6e6",
-          keepAlive: false,
-        },
-      },
-    ],
+          keepAlive: false
+        }
+      }
+    ]
   },
   {
     path: "/login",
     component: () => import("@views/login/index.vue"),
     meta: {
       title: "登录",
-      isHideTab: true,
-    },
+      isHideTab: true
+    }
   },
   {
     path: "/register",
@@ -63,8 +63,8 @@ const routes = [
     meta: {
       title: "注册",
       isHideTab: true,
-      noLogin: true,
-    },
+      noLogin: true
+    }
   },
   {
     path: "/forget-password",
@@ -72,15 +72,15 @@ const routes = [
     meta: {
       title: "忘记密码",
       isHideTab: true,
-      noLogin: true,
-    },
+      noLogin: true
+    }
   },
   {
     path: "/exception",
     component: Home,
     meta: {
       title: "异常页面",
-      title_en: "Exception",
+      title_en: "Exception"
     },
     children: [
       {
@@ -88,27 +88,27 @@ const routes = [
         component: () => import("@/views/exception/403.vue"),
         meta: {
           title: "403",
-          title_en: "403",
-        },
+          title_en: "403"
+        }
       },
       {
         path: "404",
         component: () => import("@views/exception/404.vue"),
         meta: {
           title: "404",
-          title_en: "404",
-        },
+          title_en: "404"
+        }
       },
       {
         path: "500",
         component: () => import("@views/exception/500.vue"),
         meta: {
           title: "500",
-          title_en: "500",
-        },
-      },
-    ],
-  },
+          title_en: "500"
+        }
+      }
+    ]
+  }
 ] as AppRouteRecordRaw[];
 
 // 1. 先定义所有路由，不再动态生成
@@ -120,15 +120,15 @@ const allRoutes = [
       title: "首页",
       title_en: "Home",
       icon: "\ue6e6",
-      keepAlive: false,
-    },
+      keepAlive: false
+    }
   },
   {
     path: "/approval",
     component: Home,
     name: "Approval",
     meta: {
-      title: "通知看板",
+      title: "通知看板"
     },
     children: [
       {
@@ -136,34 +136,34 @@ const allRoutes = [
         name: "Template",
         component: () => import("@views/approval/approval-template/index.vue"),
         meta: {
-          title: "消息通知",
-        },
+          title: "消息通知"
+        }
       },
       {
         path: "/approval/workflow",
         name: "Workflow",
         component: () => import("@views/approval/workflow/index.vue"),
         meta: {
-          title: "我的待办",
-        },
+          title: "我的待办"
+        }
       },
       {
         path: "/approval/list",
         name: "ApprovalList",
         component: () => import("@views/approval/approval-list/index.vue"),
         meta: {
-          title: "我处理的",
-        },
+          title: "我处理的"
+        }
       },
       {
         path: "/approval/myCc",
         name: "ApprovalMyCc",
         component: () => import("@views/approval/myCc/index.vue"),
         meta: {
-          title: "抄送我的",
-        },
-      },
-    ],
+          title: "抄送我的"
+        }
+      }
+    ]
   },
   {
     path: "/HSBind",
@@ -171,8 +171,8 @@ const allRoutes = [
     meta: {
       title: "家校绑定",
       icon: "\ue6e6",
-      keepAlive: false,
-    },
+      keepAlive: false
+    }
   },
   {
     path: "/studentManage",
@@ -180,7 +180,7 @@ const allRoutes = [
     name: "StudentManage",
     meta: {
       title: "学生管理",
-      icon: "\ue6e6",
+      icon: "\ue6e6"
     },
     children: [
       {
@@ -188,10 +188,10 @@ const allRoutes = [
         name: "StudentList",
         component: () => import("@views/student/list.vue"),
         meta: {
-          title: "学生列表",
-        },
-      },
-    ],
+          title: "学生列表"
+        }
+      }
+    ]
   },
   {
     path: "/parentManage",
@@ -199,7 +199,7 @@ const allRoutes = [
     name: "ParentManage",
     meta: {
       title: "家长管理",
-      icon: "\ue6e6",
+      icon: "\ue6e6"
     },
     children: [
       {
@@ -207,17 +207,17 @@ const allRoutes = [
         name: "ParentList",
         component: () => import("@views/parent/list.vue"),
         meta: {
-          title: "家长列表",
-        },
-      },
-    ],
+          title: "家长列表"
+        }
+      }
+    ]
   },
   {
     path: "/system",
     component: Home,
     name: "System",
     meta: {
-      title: "系统管理",
+      title: "系统管理"
     },
     children: [
       {
@@ -225,33 +225,51 @@ const allRoutes = [
         name: "User",
         component: () => import("@views/system/user.vue"),
         meta: {
-          title: "用户管理",
-        },
+          title: "用户管理"
+        }
       },
       {
         path: "/system/role",
         name: "Role",
         component: () => import("@views/system/role.vue"),
         meta: {
-          title: "角色管理",
-        },
+          title: "角色管理"
+        }
       },
       {
         path: "/system/menu",
         name: "Menu",
-        component: () => import("@views/notice/index.vue"),
+        component: () => import("@views/score/index.vue"),
         meta: {
-          title: "菜单管理",
-        },
+          title: "菜单管理"
+        }
       },
-    ],
+      {
+        path: "/system/add",
+        name: "MenuAdd",
+        component: () => import("@/views/teachFeed/form.vue"),
+        meta: {
+          title: "新增教学反馈",
+          hidden: true
+        }
+      },
+      {
+        path: "/system/edit/:id",
+        name: "MenuEdit",
+        component: () => import("@/views/teachFeed/form.vue"),
+        meta: {
+          title: "编辑教学反馈",
+          hidden: true
+        }
+      }
+    ]
   },
   {
     path: "/teachingPlan",
     component: Home,
     name: "TeachingPlan",
     meta: {
-      title: "教学计划",
+      title: "教学计划"
     },
     children: [
       {
@@ -259,8 +277,8 @@ const allRoutes = [
         name: "ClassPlan",
         component: () => import("@views/teachingPlan/classPlan/index.vue"),
         meta: {
-          title: "课计划",
-        },
+          title: "课计划"
+        }
       },
       {
         path: "/teachingPlan/addCourse",
@@ -268,26 +286,26 @@ const allRoutes = [
         component: () =>
           import("@views/teachingPlan/classPlan/comp/addCourse.vue"),
         meta: {
-          title: "新增课程",
-        },
+          title: "新增课程"
+        }
       },
       {
         path: "/teachingPlan/weekPlan",
         name: "WeekPlan",
         component: () => import("@views/teachingPlan/weekPlan/index.vue"),
         meta: {
-          title: "周计划",
-        },
+          title: "周计划"
+        }
       },
       {
         path: "/teachingPlan/semesterPlan",
         name: "SemesterPlan",
         component: () => import("@views/teachingPlan/semesterPlan/index.vue"),
         meta: {
-          title: "学期计划",
-        },
-      },
-    ],
+          title: "学期计划"
+        }
+      }
+    ]
   },
   // 教学管理
   {
@@ -295,7 +313,7 @@ const allRoutes = [
     component: Home,
     name: "TeachingManage",
     meta: {
-      title: "教学管理",
+      title: "教学管理"
     },
     children: [
       {
@@ -303,41 +321,67 @@ const allRoutes = [
         name: "Grade",
         component: () => import("@views/grade/index.vue"),
         meta: {
-          title: "年级班级",
-        },
+          title: "年级班级"
+        }
       },
       {
         path: "/teachingManage/classRoom",
         name: "ClassRoom",
         component: () => import("@views/classRoom/index.vue"),
         meta: {
-          title: "教室管理",
-        },
+          title: "教室管理"
+        }
       },
       {
         path: "/teachingManage/courseSystem",
         name: "CourseSystem",
         component: () => import("@views/courseSystem/index.vue"),
         meta: {
-          title: "课程体系",
-        },
+          title: "课程体系"
+        }
       },
       {
         path: "/teachingManage/courseBasic",
         name: "CourseBasic",
         component: () => import("@views/courseBasic/index.vue"),
         meta: {
-          title: "课程信息",
-        },
+          title: "课程信息"
+        }
       },
-    ],
+      {
+        path: "/teachingManage/teachFeed",
+        name: "TeachFeed",
+        component: () => import("@views/teachFeed/index.vue"),
+        meta: {
+          title: "教学反馈"
+        }
+        // children: [
+        //   {
+        //     path: 'add',
+        //     name: 'TeachFeedAdd',
+        //     component: () => import('@/views/teachFeed/form.vue'),
+        //     meta: {
+        //       title: '新增教学反馈'
+        //     }
+        //   },
+        //   {
+        //     path: 'edit/:id',
+        //     name: 'TeachFeedEdit',
+        //     component: () => import('@/views/teachFeed/form.vue'),
+        //     meta: {
+        //       title: "编辑教学反馈"
+        //     }
+        //   }
+        // ]
+      }
+    ]
   },
   {
     path: "/salary",
     component: Home,
     name: "SalaryManage",
     meta: {
-      title: "薪资管理",
+      title: "薪资管理"
     },
     children: [
       {
@@ -345,17 +389,17 @@ const allRoutes = [
         name: "SalaryList",
         component: () => import("@views/salary-manage/index.vue"),
         meta: {
-          title: "薪资列表",
-        },
-      },
-    ],
+          title: "薪资列表"
+        }
+      }
+    ]
   },
   {
     path: "/revenue",
     component: Home,
     name: "Revenue",
     meta: {
-      title: "营收中心",
+      title: "营收中心"
     },
     children: [
       {
@@ -363,11 +407,11 @@ const allRoutes = [
         name: "RevenueManage",
         component: () => import("@views/revenue/index.vue"),
         meta: {
-          title: "营收管理",
+          title: "营收管理"
         },
-        roles: ["admin", "company"],
-      },
-    ],
+        roles: ["admin", "company"]
+      }
+    ]
   },
   //课程管理
   {
@@ -375,7 +419,7 @@ const allRoutes = [
     component: Home,
     name: "TermManage",
     meta: {
-      title: "学期管理",
+      title: "学期管理"
     },
     children: [
       {
@@ -383,25 +427,25 @@ const allRoutes = [
         name: "TermList",
         component: () => import("@views/term-manage/termlist.vue"),
         meta: {
-          title: "学期列表",
-        },
+          title: "学期列表"
+        }
       },
       {
         path: "/termManage/courseList",
         name: "CourseList",
         component: () => import("@views/term-manage/courseList.vue"),
         meta: {
-          title: "排课管理",
-        },
-      },
-    ],
+          title: "排课管理"
+        }
+      }
+    ]
   },
   {
     path: "/approval",
     component: Home,
     name: "Approval",
     meta: {
-      title: "审批",
+      title: "审批"
     },
     children: [
       {
@@ -409,19 +453,19 @@ const allRoutes = [
         name: "StudentApproval",
         component: () => import("@views/approval/leave-approval/index.vue"),
         meta: {
-          title: "学生请假",
-        },
+          title: "学生请假"
+        }
       },
       {
         path: "/approval/device",
         name: "DeviceApproval",
         component: () => import("@views/approval/device-approval/index.vue"),
         meta: {
-          title: "设备申请",
-        },
-      },
-    ],
-  },
+          title: "设备申请"
+        }
+      }
+    ]
+  }
 ];
 
 // 2. 创建路由实例时注册所有路由
@@ -429,8 +473,8 @@ export const router = createRouter({
   history: createWebHashHistory(),
   routes: [
     ...routes, // 公共路由
-    ...allRoutes, // 所有权限路由
-  ],
+    ...allRoutes // 所有权限路由
+  ]
 });
 
 // 3. 在路由守卫中根据用户角色过滤路由
@@ -483,7 +527,7 @@ router.beforeEach(async (to, from, next) => {
       title_en: titleEn as string,
       path,
       params,
-      query,
+      query
     });
   }
 

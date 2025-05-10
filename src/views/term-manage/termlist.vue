@@ -55,7 +55,7 @@
       </el-table-column>
     </art-table>
 
-    <el-dialog v-model="addSemesterDialogVisible" title="新增学期" width="50%">
+    <el-dialog v-model="addSemesterDialogVisible" title="新增学期" width="70%">
       <el-form :model="addSemesterForm" label-width="100px">
         <el-form-item label="学期名称" prop="semester">
           <el-input
@@ -121,220 +121,229 @@
 </template>
 
 <script setup lang="ts">
-  import { onMounted, ref, computed } from "vue";
-  import { TermService } from "@/api/termApi";
-  import { ElMessage } from "element-plus";
+import { onMounted, ref, computed } from "vue";
+import { TermService } from "@/api/termApi";
+import { ElMessage } from "element-plus";
+import { useRouter } from "vue-router";
 
-  const termQuery = ref({
-    termName: "",
-    pageNum: 1,
-    pageSize: 10,
+const router = useRouter();
+const termQuery = ref({
+  termName: "",
+  pageNum: 1,
+  pageSize: 10
+});
+
+const termList = ref([]);
+const total = ref(0);
+const isLoading = ref(false);
+const addSemesterDialogVisible = ref(false);
+const addSemesterForm = ref<any>({
+  termName: "",
+  termWeekInfoList: [
+    {
+      weekNum: 1,
+      startTime: null,
+      endTime: null,
+      remark: ""
+    }
+  ]
+});
+const actionType = ref("add");
+
+const processedTermList = computed(() => {
+  const result: any = [];
+  termList.value.forEach((term: any) => {
+    term.termWeekInfoList.forEach((week: any, index: number) => {
+      result.push({
+        ...term,
+        ...week,
+        isFirstRow: index === 0
+      });
+    });
   });
+  console.log(result);
+  return result;
+});
 
-  const termList = ref([]);
-  const total = ref(0);
-  const isLoading = ref(false);
-  const addSemesterDialogVisible = ref(false);
-  const addSemesterForm = ref<any>({
+const handleSearch = () => {
+  TermService.getTermList(termQuery.value).then((res: any) => {
+    termList.value = res.data.list;
+    total.value = res.data.total;
+  });
+};
+
+const handleAdd = () => {
+  actionType.value = "add";
+  addSemesterForm.value = {
     termName: "",
     termWeekInfoList: [
       {
         weekNum: 1,
         startTime: null,
         endTime: null,
-        remark: "",
-      },
-    ],
-  });
-  const actionType = ref("add");
+        remark: ""
+      }
+    ]
+  };
+  addSemesterDialogVisible.value = true;
+};
 
-  const processedTermList = computed(() => {
-    const result: any = [];
-    termList.value.forEach((term: any) => {
-      term.termWeekInfoList.forEach((week: any, index: number) => {
-        result.push({
-          ...term,
-          ...week,
-          isFirstRow: index === 0,
-        });
-      });
-    });
-    console.log(result);
-    return result;
-  });
+const handlePageChange = (pageNum: number, pageSize: number) => {
+  termQuery.value.pageNum = pageNum;
+  termQuery.value.pageSize = pageSize;
+  handleSearch();
+};
 
-  const handleSearch = () => {
-    TermService.getTermList(termQuery.value).then((res: any) => {
-      termList.value = res.data.list;
-      total.value = res.data.total;
-    });
+const handleSizeChange = (pageSize: number) => {
+  termQuery.value.pageSize = pageSize;
+  handleSearch();
+};
+
+const handleEdit = (row: any) => {
+  // 找到完整的学期数据
+  const termData = termList.value.find(
+    (term: any) => term.termCode === row.termCode
+  );
+
+  // 处理时间范围回显
+  const formData = {
+    ...(termData ?? {}),
+    termWeekInfoList:
+      termData?.termWeekInfoList?.map((week: any) => ({
+        ...week,
+        timeRange: [week.startTime, week.endTime],
+        weekNum: Number(week.weekNum)
+      })) ?? []
   };
 
-  const handleAdd = () => {
-    actionType.value = "add";
-    addSemesterForm.value = {
-      termName: "",
-      termWeekInfoList: [
-        {
-          weekNum: 1,
-          startTime: null,
-          endTime: null,
-          remark: "",
-        },
-      ],
-    };
-    addSemesterDialogVisible.value = true;
-  };
+  addSemesterForm.value = formData;
+  addSemesterDialogVisible.value = true;
+  actionType.value = "edit";
+};
 
-  const handlePageChange = (pageNum: number, pageSize: number) => {
-    termQuery.value.pageNum = pageNum;
-    termQuery.value.pageSize = pageSize;
-    handleSearch();
-  };
-
-  const handleSizeChange = (pageSize: number) => {
-    termQuery.value.pageSize = pageSize;
-    handleSearch();
-  };
-
-  const handleEdit = (row: any) => {
-    // 找到完整的学期数据
-    const termData = termList.value.find(
-      (term: any) => term.termCode === row.termCode
-    );
-
-    // 处理时间范围回显
-    const formData = {
-      ...(termData ?? {}),
-      termWeekInfoList:
-        termData?.termWeekInfoList?.map((week: any) => ({
-          ...week,
-          timeRange: [week.startTime, week.endTime],
-          weekNum: Number(week.weekNum),
-        })) ?? [],
-    };
-
-    addSemesterForm.value = formData;
-    addSemesterDialogVisible.value = true;
-    actionType.value = "edit";
-  };
-
-  const handleArchive = (row: any) => {
-    console.log(row);
-  };
-
-  const handleDelete = (row: any) => {
-    console.log(row);
-  };
-
-  const addTimeItem = (index: number) => {
-    addSemesterForm.value.termWeekInfoList.push({
-      weekNum: index + 1,
-      startTime: null,
-      endTime: null,
-      remark: "",
-    });
-  };
-
-  const removeTimeItem = (index: number) => {
-    addSemesterForm.value.termWeekInfoList.splice(index, 1);
-  };
-
-  const handleTimeRangeUpdate = (index: number, value: any) => {
-    console.log(value);
-    addSemesterForm.value.termWeekInfoList[index].startTime = value[0];
-    addSemesterForm.value.termWeekInfoList[index].endTime = value[1];
-  };
-
-  const handleSubmit = () => {
-    if (actionType.value === "add") {
-      const data = addSemesterForm.value.termWeekInfoList.map(
-        (item: any, index: number) => {
-          return {
-            startTime: item.startTime,
-            endTime: item.endTime,
-            remark: item.remark,
-            weekNum: index + 1,
-          };
-        }
-      );
-      addSemesterForm.value.termWeekInfoList = data;
-      console.log(addSemesterForm.value);
-      TermService.addTerm(addSemesterForm.value).then((res: any) => {
-        if (res.code === 0) {
-          ElMessage.success("新增成功");
-          addSemesterDialogVisible.value = false;
-          handleSearch();
-        }
-      });
-    } else {
-      const data = addSemesterForm.value.termWeekInfoList.map(
-        (item: any, index: number) => {
-          return {
-            startTime: item.startTime,
-            endTime: item.endTime,
-            remark: item.remark,
-            weekNum: index + 1,
-            termUniqueCode: addSemesterForm.value.termUniqueCode,
-          };
-        }
-      );
-      addSemesterForm.value.termWeekInfoList = data;
-      TermService.editTerm(addSemesterForm.value).then((res: any) => {
-        console.log(res);
-        if (res.code === 0) {
-          ElMessage.success("编辑成功");
-          addSemesterDialogVisible.value = false;
-          handleSearch();
-        }
-      });
+const handleArchive = (row: any) => {
+  console.log(row);
+  router.push({
+    path: "/termManage/courseList",
+    query: {
+      termCode: row.termCode,
+      termUniqueCode: row.termUniqueCode,
+      startTime: row.startTime
     }
-  };
+  });
+};
 
-  const handleSpanMethod = ({ row, column, rowIndex, columnIndex }: any) => {
-    if (column.property === "termName" || column.property === "action") {
-      if (row.isFirstRow) {
-        const rowSpan =
-          termList.value.find((term: any) => term.termCode === row.termCode)
-            ?.termWeekInfoList.length || 1;
+const handleDelete = (row: any) => {
+  console.log(row);
+};
+
+const addTimeItem = (index: number) => {
+  addSemesterForm.value.termWeekInfoList.push({
+    weekNum: index + 1,
+    startTime: null,
+    endTime: null,
+    remark: ""
+  });
+};
+
+const removeTimeItem = (index: number) => {
+  addSemesterForm.value.termWeekInfoList.splice(index, 1);
+};
+
+const handleTimeRangeUpdate = (index: number, value: any) => {
+  console.log(value);
+  addSemesterForm.value.termWeekInfoList[index].startTime = value[0];
+  addSemesterForm.value.termWeekInfoList[index].endTime = value[1];
+};
+
+const handleSubmit = () => {
+  if (actionType.value === "add") {
+    const data = addSemesterForm.value.termWeekInfoList.map(
+      (item: any, index: number) => {
         return {
-          rowspan: rowSpan,
-          colspan: 1,
-        };
-      } else {
-        return {
-          rowspan: 0,
-          colspan: 0,
+          startTime: item.startTime,
+          endTime: item.endTime,
+          remark: item.remark,
+          weekNum: index + 1
         };
       }
-    }
-  };
+    );
+    addSemesterForm.value.termWeekInfoList = data;
+    console.log(addSemesterForm.value);
+    TermService.addTerm(addSemesterForm.value).then((res: any) => {
+      if (res.code === 0) {
+        ElMessage.success("新增成功");
+        addSemesterDialogVisible.value = false;
+        handleSearch();
+      }
+    });
+  } else {
+    const data = addSemesterForm.value.termWeekInfoList.map(
+      (item: any, index: number) => {
+        return {
+          startTime: item.startTime,
+          endTime: item.endTime,
+          remark: item.remark,
+          weekNum: index + 1,
+          termUniqueCode: addSemesterForm.value.termUniqueCode
+        };
+      }
+    );
+    addSemesterForm.value.termWeekInfoList = data;
+    TermService.editTerm(addSemesterForm.value).then((res: any) => {
+      console.log(res);
+      if (res.code === 0) {
+        ElMessage.success("编辑成功");
+        addSemesterDialogVisible.value = false;
+        handleSearch();
+      }
+    });
+  }
+};
 
-  onMounted(() => {
-    handleSearch();
-  });
+const handleSpanMethod = ({ row, column, rowIndex, columnIndex }: any) => {
+  if (column.property === "termName" || column.property === "action") {
+    if (row.isFirstRow) {
+      const rowSpan =
+        termList.value.find((term: any) => term.termCode === row.termCode)
+          ?.termWeekInfoList.length || 1;
+      return {
+        rowspan: rowSpan,
+        colspan: 1
+      };
+    } else {
+      return {
+        rowspan: 0,
+        colspan: 0
+      };
+    }
+  }
+};
+
+onMounted(() => {
+  handleSearch();
+});
 </script>
 
 <style lang="scss" scoped>
-  .parents-info {
-    h3 {
-      margin-bottom: 16px;
-      font-weight: 500;
-      color: #303133;
-    }
+.parents-info {
+  h3 {
+    margin-bottom: 16px;
+    font-weight: 500;
+    color: #303133;
   }
+}
 
-  .el-select {
-    width: 100%;
-  }
+.el-select {
+  width: 100%;
+}
 
-  .time-list-item {
-    border: 1px solid #eee;
-    padding: 15px;
-    margin-bottom: 15px;
-    border-radius: 4px;
-    display: flex;
-    align-items: flex-start;
-    gap: 10px;
-  }
+.time-list-item {
+  border: 1px solid #eee;
+  padding: 15px;
+  margin-bottom: 15px;
+  border-radius: 4px;
+  display: flex;
+  justify-content: space-between;
+}
 </style>

@@ -7,6 +7,10 @@
       :border="border"
       v-loading="props.loading"
       :span-method="props.objectSpanMethod"
+      :tree-props="treeProps"
+      :load="load"
+      :lazy="lazy"
+      stripe
     >
       <slot></slot>
     </el-table>
@@ -71,6 +75,18 @@ const props = defineProps({
   border: {
     type: Boolean,
     default: false
+  },
+  treeProps: {
+    type: Object,
+    default: () => ({})
+  },
+  load: {
+    type: Function as PropType<(row: any, treeNode: any) => void>,
+    default: undefined
+  },
+  lazy: {
+    type: Boolean,
+    default: false
   }
 });
 const emit = defineEmits(["update:currentPage", "pageChange", "sizeChange"]);
@@ -131,6 +147,7 @@ const handleSizeChange = (val: number) => {
 
     tr {
       height: 65px !important;
+      border-color: #f0f !important;
     }
   }
 }

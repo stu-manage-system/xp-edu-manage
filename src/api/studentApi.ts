@@ -40,4 +40,12 @@ export class StudentService {
       url: `/student/delete/${params}`,
     });
   }
+
+  // 获取学生列表（不分页）
+  static getStuNotPageList(data: any) {
+    return request.post<BaseResult>({
+      url: "/student/queryStuNotPage",
+      data,
+    });
+  }
 }

@@ -26,16 +26,11 @@
       @page-change="handlePageChange"
       @size-change="handleSizeChange"
     >
-      <template #default>
-        <el-table-column label="角色名称" prop="roleName" />
-        <el-table-column label="角色类型" prop="roleType" />
-        <el-table-column label="备注" prop="remark" />
-        <el-table-column
-          fixed="right"
-          label="操作"
-          width="250"
-          #default="scope"
-        >
+      <el-table-column label="角色名称" prop="roleName" />
+      <el-table-column label="角色类型" prop="roleType" />
+      <el-table-column label="备注" prop="remark" />
+      <el-table-column fixed="right" label="操作" width="250">
+        <template #default="scope">
           <el-button
             link
             :icon="View"
@@ -60,8 +55,8 @@
           >
             删除
           </el-button>
-        </el-table-column>
-      </template>
+        </template>
+      </el-table-column>
     </art-table>
 
     <el-dialog

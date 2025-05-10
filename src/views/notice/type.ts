@@ -1,8 +1,13 @@
 export interface Announcement {
-  id: string;
-  title: string;
-  type: string;
-  content: string;
-  operator: string;
-  create_time: string;
+  noticeCode?: string;
+  title?: string;
+  noticeSystem?: string;
+  noticeType?: string;
+  content?: string;
+  startTime?: string | null;
+  endTime?: string | null;
+  isTop?: number;
+  priority?: number;
+  operator?: string;
+  ctime?: string;
 }

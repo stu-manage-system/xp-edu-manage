@@ -1,11 +1,11 @@
 <template>
   <div class="console">
-    <CardList></CardList>
+    <!-- <CardList></CardList>
 
     <div class="column column2">
       <ActiveUser></ActiveUser>
       <SalesOverview></SalesOverview>
-    </div>
+    </div> -->
 
     <!-- <div class="column column3">
       <NewUser></NewUser>
@@ -16,36 +16,38 @@
 </template>
 
 <script setup lang="ts">
-import CardList from "./widget/CardList.vue"
-import ActiveUser from "./widget/ActiveUser.vue"
-import SalesOverview from "./widget/SalesOverview.vue"
-import NewUser from "./widget/NewUser.vue"
-import Dynamic from "./widget/Dynamic.vue"
-import { SystemInfo } from "@/config/setting"
-import TodoList from "./widget/TodoList.vue"
-import { scrollToTop } from "@/utils/utils"
-import { useSettingStore } from "@/store/modules/setting"
+import CardList from "./widget/CardList.vue";
+import ActiveUser from "./widget/ActiveUser.vue";
+import SalesOverview from "./widget/SalesOverview.vue";
+import NewUser from "./widget/NewUser.vue";
+import Dynamic from "./widget/Dynamic.vue";
+import { SystemInfo } from "@/config/setting";
+import TodoList from "./widget/TodoList.vue";
+import { scrollToTop } from "@/utils/utils";
+import { useSettingStore } from "@/store/modules/setting";
 
-const settingStore = useSettingStore()
-const currentGlopTheme = computed(() => settingStore.systemThemeType)
+const settingStore = useSettingStore();
+const currentGlopTheme = computed(() => settingStore.systemThemeType);
 
 // 系统主题风格变化时，刷新页面重写渲染 Echarts
 watch(currentGlopTheme, () => {
-  settingStore.reload()
-})
+  settingStore.reload();
+});
 
-const systemName = SystemInfo.name
-scrollToTop()
+const systemName = SystemInfo.name;
+scrollToTop();
 
 const goPage = (url: string) => {
   // 跳转到新页面
-  window.open(url)
-}
+  window.open(url);
+};
 </script>
 
 <style lang="scss" scoped>
 .console {
   padding-bottom: 15px;
+  background: url("@/assets/img/xpjw.jpg") no-repeat center center;
+  background-size: 100% 100%;
 
   :deep(.card-header) {
     display: flex;

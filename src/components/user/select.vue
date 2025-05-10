@@ -1,6 +1,6 @@
 <template>
   <el-dialog
-    title="选择用户"
+    title="选择教师"
     v-model="dialogVisible"
     width="500px"
     :close-on-click-modal="false"
@@ -8,7 +8,7 @@
     <div class="search-bar">
       <el-input
         v-model="searchKeyword"
-        placeholder="请输入用户姓名搜索"
+        placeholder="请输入教师姓名搜索"
         style="width: 200px"
         @input="handleSearch"
       />

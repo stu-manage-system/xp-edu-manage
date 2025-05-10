@@ -71,19 +71,24 @@
       @size-change="handleSizeChange"
     >
       <el-table-column label="序号" type="index" width="80" align="center" />
-      <el-table-column label="学期" prop="semester" align="center" />
-      <el-table-column label="起始日期" prop="startEndDate" align="center" />
-      <el-table-column label="教师" prop="teacher" align="center" />
-      <el-table-column label="科目" prop="subject" align="center" />
-      <el-table-column label="月" prop="month" align="center" />
-      <el-table-column label="周" prop="week" align="center" />
-      <el-table-column label="日期" prop="date" align="center" />
-      <el-table-column label="课次" prop="hours" align="center" />
-      <el-table-column label="内容" prop="content" align="center" />
-      <el-table-column label="备注" prop="remark" align="center" />
-      <el-table-column label="创建人" prop="creator" align="center" />
-      <el-table-column label="更新时间" prop="updateTime" align="center" />
-      <el-table-column label="操作" width="200" align="center" fixed="right">
+      <el-table-column
+        label="学期"
+        prop="termName"
+        align="center"
+        width="180"
+        show-overflow-tooltip
+      />
+      <el-table-column label="教师" prop="userName" align="center" />
+      <el-table-column label="科目" prop="courseName" align="center" />
+      <el-table-column label="年级" prop="gradeName" align="center" />
+      <el-table-column label="班级" prop="className" align="center" />
+      <el-table-column
+        label="更新时间"
+        prop="mtime"
+        align="center"
+        width="200"
+      />
+      <el-table-column label="操作" width="240" align="center" fixed="right">
         <template #default="{ row }">
           <el-button
             link
@@ -92,6 +97,15 @@
             @click="showDialog('edit', row)"
           >
             编辑
+          </el-button>
+          <el-button
+            link
+            :icon="View"
+            plain
+            color="#67c23a"
+            @click="showDialog('view', row)"
+          >
+            详情
           </el-button>
           <el-popconfirm
             title="确认删除该学期计划吗？"
@@ -112,29 +126,42 @@
 
     <!-- 对话框组件 -->
     <el-dialog
-      :title="dialogType === 'add' ? '新增学期计划' : '编辑学期计划'"
+      :title="
+        dialogType === 'add'
+          ? '新增学期计划'
+          : dialogType === 'edit'
+            ? '编辑学期计划'
+            : '查看学期计划'
+      "
       v-model="dialogVisible"
       width="80%"
       :close-on-click-modal="false"
     >
       <add-semester
+        v-if="dialogType === 'add' || dialogType === 'edit'"
         :type="dialogType"
         @close="closeDialog"
         @refresh="handleSearch"
         :id="courseId"
         ref="addSemesterRef"
       />
+      <plan-detail
+        v-if="dialogType === 'view'"
+        :id="courseId"
+        @close="closeDialog"
+      />
     </el-dialog>
   </div>
 </template>
 
 <script setup>
-import { CourseService } from "@/api/courseApi";
-import { Delete, EditPen } from "@element-plus/icons-vue";
+import { Delete, EditPen, View } from "@element-plus/icons-vue";
 import { ElMessage } from "element-plus";
-import { nextTick, reactive, ref } from "vue";
+import { nextTick, reactive, ref, onMounted } from "vue";
 import AddSemester from "./comp/addSemester.vue";
+import PlanDetail from "./comp/detail.vue";
 import { UserService } from "@/api/usersApi";
+import { TeachPlanService } from "@/api/teachPlan";
 
 const isLoading = ref(false);
 const total = ref(0);
@@ -152,18 +179,21 @@ const dialogVisible = ref(false);
 const dialogType = ref("add");
 const addSemesterRef = ref(null);
 const courseId = ref(null);
-
 // 搜索方法
 const handleSearch = async () => {
   try {
     isLoading.value = true;
-    const res = await CourseService.querySemesterList();
-    if (res.code === 200) {
+    const res = await TeachPlanService.getTermPlanList({
+      pageNum: currentPage.value,
+      pageSize: pageSize.value,
+      ...searchForm
+    });
+    if (res.code === 0) {
       tableData.value = res.data.list;
       total.value = res.data.total;
     }
   } catch (error) {
-    ElMessage.error("查询失败");
+    console.error("获取数据失败:", error);
   } finally {
     isLoading.value = false;
   }
@@ -190,10 +220,10 @@ const handleExport = () => {
 const showDialog = (type, row = {}) => {
   dialogType.value = type;
   dialogVisible.value = true;
-  courseId.value = row.id;
+  courseId.value = row.termPlanCode;
   nextTick(() => {
     if (type === "edit") {
-      addSemesterRef.value?.getSemesterDetail(row.id);
+      addSemesterRef.value?.getSemesterDetail(row.termPlanCode);
     }
   });
 };
@@ -201,6 +231,7 @@ const showDialog = (type, row = {}) => {
 // 关闭对话框方法
 const closeDialog = () => {
   dialogVisible.value = false;
+  handleSearch();
 };
 
 // 新增方法
@@ -211,8 +242,8 @@ const handleAdd = () => {
 // 删除方法
 const handleDelete = async (row) => {
   try {
-    const res = await CourseService.deleteSemester(row.id);
-    if (res.code === 200) {
+    const res = await TeachPlanService.deleteTermPlan(row.termPlanCode);
+    if (res.code === 0) {
       ElMessage.success("删除成功");
       handleSearch();
     }
@@ -238,6 +269,10 @@ const remoteSubjectMethod = async (query) => {
   });
   subjectList.value = res.data.list;
 };
+
+onMounted(() => {
+  handleSearch();
+});
 </script>
 
 <style scoped lang="scss">
