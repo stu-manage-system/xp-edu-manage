@@ -1,8 +1,19 @@
 <template>
   <div class="add-semester">
-    <el-form :model="formData" :rules="rules" ref="formRef" label-width="100px" v-loading="loading">
+    <el-form
+      :model="formData"
+      :rules="rules"
+      ref="formRef"
+      label-width="100px"
+      v-loading="loading"
+    >
       <el-form-item label="教师" prop="userName" required>
-        <el-input v-model="formData.userName" placeholder="请选择教师" readonly @click="handleSelectTeacher">
+        <el-input
+          v-model="formData.userName"
+          placeholder="请选择教师"
+          readonly
+          @click="handleSelectTeacher"
+        >
           <template #append>
             <el-button @click="handleSelectTeacher"> 选择 </el-button>
           </template>
@@ -10,40 +21,79 @@
       </el-form-item>
 
       <el-form-item label="年级/班级" prop="name" required>
-        <el-select v-model="formData.name" placeholder="请选择年级" class="form-input" @change="handleGradeChange">
-          <el-option v-for="item in gradeList" :key="item.value" :label="item.label" :value="item.value" />
+        <el-select
+          v-model="formData.name"
+          placeholder="请选择年级"
+          class="form-input"
+          @change="handleGradeChange"
+        >
+          <el-option
+            v-for="item in gradeList"
+            :key="item.value"
+            :label="item.label"
+            :value="item.value"
+          />
         </el-select>
       </el-form-item>
 
       <el-form-item label="课程" prop="courseCode" required>
-        <el-select v-model="formData.courseCode" placeholder="请选择课程" @change="handleCourseChange">
-          <el-option v-for="item in courseList" :key="item.value" :label="item.label" :value="item.value">
+        <el-select
+          v-model="formData.courseCode"
+          placeholder="请选择课程"
+          @change="handleCourseChange"
+        >
+          <el-option
+            v-for="item in courseList"
+            :key="item.value"
+            :label="item.label"
+            :value="item.value"
+          >
           </el-option>
         </el-select>
       </el-form-item>
       <el-form-item label="课程体系" prop="courseSystemCode">
-        <el-tree-select v-model="formData.courseSystemCode" placeholder="请选择课程体系" class="form-input"
-          :data="courseSystemList" show-checkbox check-strictly node-key="code" :props="{
+        <el-tree-select
+          v-model="formData.courseSystemCode"
+          placeholder="请选择课程体系"
+          class="form-input"
+          :data="courseSystemList"
+          show-checkbox
+          check-strictly
+          node-key="code"
+          :props="{
             label: 'name',
             value: 'code',
             children: 'children'
-          }" />
+          }"
+        />
       </el-form-item>
       <el-form-item label="考试阶段" prop="examTypeCode">
-        <el-select v-model="formData.examTypeCode" placeholder="请选择考试阶段" class="form-input">
-          <!-- <el-option
+        <el-select
+          v-model="formData.examTypeCode"
+          placeholder="请选择考试阶段"
+          class="form-input"
+        >
+          <el-option
             v-for="item in examStageList"
             :key="item.value"
             :label="item.label"
             :value="item.value"
-          /> -->
-          <el-option label="期中" value="1" />
-          <el-option label="期末" value="2" />
+          />
         </el-select>
       </el-form-item>
       <el-form-item label="学期名称" prop="termCode">
-        <el-select v-model="formData.termCode" placeholder="请选择学期名称" class="form-input" @change="handleTermChange">
-          <el-option v-for="item in termList" :key="item.value" :label="item.label" :value="item.value" />
+        <el-select
+          v-model="formData.termCode"
+          placeholder="请选择学期名称"
+          class="form-input"
+          @change="handleTermChange"
+        >
+          <el-option
+            v-for="item in termList"
+            :key="item.value"
+            :label="item.label"
+            :value="item.value"
+          />
         </el-select>
       </el-form-item>
       <el-form-item label="备注" prop="remark">
@@ -55,15 +105,30 @@
           <span>成绩明细</span>
         </div>
         <el-table :data="tableData" border>
-          <el-table-column label="序号" type="index" width="70" align="center" />
+          <el-table-column
+            label="序号"
+            type="index"
+            width="70"
+            align="center"
+          />
           <el-table-column label="姓名" prop="stuName" align="center">
             <template #default="scope">
-              <el-input v-model="scope.row.stuName" placeholder="请输入姓名" readonly disabled />
+              <el-input
+                v-model="scope.row.stuName"
+                placeholder="请输入姓名"
+                readonly
+                disabled
+              />
             </template>
           </el-table-column>
           <el-table-column label="科目" prop="courseName" align="center">
             <template #default="scope">
-              <el-input v-model="scope.row.courseName" placeholder="请输入科目" readonly disabled />
+              <el-input
+                v-model="scope.row.courseName"
+                placeholder="请输入科目"
+                readonly
+                disabled
+              />
             </template>
           </el-table-column>
           <el-table-column label="成绩" prop="score" align="center">
@@ -76,14 +141,13 @@
               <el-input v-model="scope.row.level" placeholder="请输入等级" />
             </template>
           </el-table-column>
-          <el-table-column label="阶段" prop="subjectContext" align="center">
-            <template #default="scope">
-              <el-input v-model="scope.row.subjectContext" placeholder="请输入阶段" />
-            </template>
-          </el-table-column>
           <el-table-column label="评语" prop="comment" align="center">
             <template #default="scope">
-              <el-input v-model="scope.row.comment" type="textarea" placeholder="请输入评语" />
+              <el-input
+                v-model="scope.row.comment"
+                type="textarea"
+                placeholder="请输入评语"
+              />
             </template>
           </el-table-column>
           <!-- <el-table-column label="操作" width="90" align="center">
@@ -105,7 +169,11 @@
       </div>
     </el-form>
 
-    <SelectTeacher ref="selectTeacherRef" :multiple="false" @confirm="(teacher) => handleTeacherSelected(teacher)" />
+    <SelectTeacher
+      ref="selectTeacherRef"
+      :multiple="false"
+      @confirm="(teacher) => handleTeacherSelected(teacher)"
+    />
   </div>
 </template>
 
@@ -117,7 +185,7 @@ import { CourseService } from "@/api/courseApi";
 import { TermService } from "@/api/termApi";
 import { StudentService } from "@/api/studentApi";
 import { ScoreService } from "@/api/score";
-
+import { ExamTypeService } from "@/api/examType";
 const props = defineProps({
   id: {
     type: [String, Number],
@@ -127,7 +195,7 @@ const props = defineProps({
 const formRef = ref(null);
 const loading = ref(false);
 const formData = ref<any>({
-  termPlanCode: "",
+  uniqueCode: "",
   userName: "",
   gradeClassCode: "",
   name: "",
@@ -158,6 +226,21 @@ const rules = {
 
 const tableData = ref<any[]>([]);
 const emit = defineEmits(["close"]);
+const examStageList = ref<{ label: string; value: string }[]>([]);
+const getExamStageList = async () => {
+  const res = await ExamTypeService.getExamTypeList({
+    pageNum: 1,
+    pageSize: 10000
+  });
+  if (res.code === 0) {
+    examStageList.value = res.data.list.map((item: any) => {
+      return {
+        label: item.examName,
+        value: item.examCode
+      };
+    });
+  }
+};
 // 获取年级列表
 const gradeList = ref<{ label: string; value: string }[]>([]);
 const getGradeList = async () => {
@@ -230,9 +313,6 @@ const handleTeacherSelected = (teacher: any) => {
   formData.value.userName = teacher.userName;
   formData.value.userCode = teacher.userCode;
 };
-const handleCourseSystemChange = (value: string) => {
-  formData.value.courseSystemCode = value;
-};
 // 获取学生列表
 const getStudentList = async (code: string) => {
   const res = await StudentService.getStuNotPageList({
@@ -254,11 +334,6 @@ const handleGradeChange = (value: string) => {
   formData.value.gradeName = arr[0];
   getStudentList(value);
 };
-
-const deleteRow = (index: number) => {
-  tableData.value.splice(index, 1);
-};
-
 const save = async () => {
   if (!formRef.value) return;
   await formRef.value.validate(async (valid: boolean) => {
@@ -275,7 +350,7 @@ const save = async () => {
         termCode: formData.value.termCode,
         termName: formData.value.termName,
         remark: formData.value.remark,
-        termPlanCode: formData.value.termPlanCode || "",
+        uniqueCode: formData.value.uniqueCode || "",
         examTypeCode: formData.value.examTypeCode,
         courseSystemCode: formData.value.courseSystemCode,
         relationDTOList: tableData.value.map((item) => {
@@ -300,15 +375,17 @@ const getSemesterDetail = async () => {
   if (!props.id) return;
 
   try {
-    const res = await ScoreService.getScoreDetail(props.id);
+    const res = await ScoreService.getScoreDetail({
+      uniqueCode: props.id
+    });
     if (res.code === 0) {
       formData.value = res.data;
-      formData.value.termPlanCode = res.data.termPlanCode;
+      formData.value.uniqueCode = res.data.uniqueCode;
       teacherList.value = {
         userCode: res.data.userCode,
         userName: res.data.userName
       };
-      formData.value.name = res.data.gradeClassCode;
+      formData.value.name = res.data.classCode;
       tableData.value = res.data.relationDTOList;
     } else {
       ElMessage.error(res.msg);
@@ -336,6 +413,7 @@ onMounted(async () => {
   await getCourseList();
   await getTermList();
   await getCourseSystemList();
+  await getExamStageList();
   loading.value = false;
 });
 

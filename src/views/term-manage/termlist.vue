@@ -228,7 +228,8 @@ const handleArchive = (row: any) => {
     query: {
       termCode: row.termCode,
       termUniqueCode: row.termUniqueCode,
-      startTime: row.startTime
+      startTime: row.startTime,
+      endTime: row.endTime
     }
   });
 };

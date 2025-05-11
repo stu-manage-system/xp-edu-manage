@@ -1,7 +1,7 @@
 <template>
   <div class="semester-detail">
     <div class="detail-header">
-      <h2>学期计划详情</h2>
+      <h2>成绩详情</h2>
     </div>
 
     <div class="detail-content">
@@ -25,17 +25,17 @@
           <div class="detail-value">{{ planInfo.courseName || "-" }}</div>
         </div>
         <div class="detail-row">
-          <div class="detail-label">创建人：</div>
-          <div class="detail-value">{{ planInfo.creatorName || "-" }}</div>
+          <div class="detail-label">课程体系：</div>
+          <div class="detail-value">{{ planInfo.courseSystemName || "-" }}</div>
         </div>
         <div class="detail-row">
-          <div class="detail-label">更新时间：</div>
-          <div class="detail-value">{{ planInfo.mtime || "-" }}</div>
+          <div class="detail-label">考试阶段：</div>
+          <div class="detail-value">{{ planInfo.examName || "-" }}</div>
         </div>
       </div>
 
       <div class="detail-table-section">
-        <h3>学期计划明细</h3>
+        <h3>成绩明细</h3>
         <el-table :data="planDetailList" stripe border>
           <el-table-column
             label="序号"
@@ -43,16 +43,10 @@
             width="80"
             align="center"
           />
-          <el-table-column label="月" prop="month" align="center" />
-          <el-table-column label="周" prop="termNumber" align="center" />
-          <el-table-column label="日期" prop="date" align="center" width="300">
-            <template #default="scope">
-              <span>{{ scope.row.startTime }} 至 {{ scope.row.endTime }}</span>
-            </template>
-          </el-table-column>
-          <el-table-column label="课次" prop="courseCount" align="center" />
-          <el-table-column label="内容" prop="subjectContext" align="center" />
-          <el-table-column label="备注" prop="remark" align="center" />
+          <el-table-column label="姓名" prop="stuName" align="center" />
+          <el-table-column label="成绩" prop="score" align="center" />
+          <el-table-column label="等级" prop="level" align="center" />
+          <el-table-column label="评语" prop="comment" align="center" />
         </el-table>
       </div>
     </div>
@@ -65,7 +59,7 @@
 
 <script setup>
 import { ref, onMounted, defineProps, defineEmits } from "vue";
-import { TeachPlanService } from "@/api/teachPlan";
+import { ScoreService } from "@/api/score";
 import { ElMessage } from "element-plus";
 
 const props = defineProps({
@@ -85,12 +79,12 @@ const getPlanDetail = async () => {
   if (!props.id) return;
 
   try {
-    const res = await TeachPlanService.queryTermPlanDetail({
-      termPlanCode: props.id
+    const res = await ScoreService.getScoreDetail({
+      uniqueCode: props.id
     });
     if (res.code === 0) {
       planInfo.value = res.data || {};
-      planDetailList.value = res.data.termPlanDetailInfoList || [];
+      planDetailList.value = res.data.relationDTOList || [];
     } else {
       ElMessage.error(res.msg || "获取学期计划详情失败");
     }

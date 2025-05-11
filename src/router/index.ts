@@ -431,11 +431,20 @@ const allRoutes = [
         }
       },
       {
+        path: "/termManage/courseArrange",
+        name: "CourseArrange",
+        component: () => import("@views/term-manage/courseArrange.vue"),
+        meta: {
+          title: "排课列表"
+        }
+      },
+      {
         path: "/termManage/courseList",
         name: "CourseList",
         component: () => import("@views/term-manage/courseList.vue"),
         meta: {
-          title: "排课管理"
+          title: "排课管理",
+          hidden: true
         }
       }
     ]

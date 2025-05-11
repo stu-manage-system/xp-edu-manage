@@ -1,26 +1,58 @@
 <template>
   <div class="schedule-container">
     <div class="header">
-      <div class="title">同步排课管理列表</div>
-      <div>
-        当前周：{{ route.query.startTime }} -- {{ route.query.endTime }}
-      </div>
-      <div class="date">{{ currentDateTime }}</div>
-    </div>
-    <div class="header" style="width: 300px">
-      <el-select
-        v-model="classCode"
-        placeholder="请选择年级"
-        class="form-input"
-        @change="handleClassCodeChange"
-      >
-        <el-option
-          v-for="item in gradeList"
-          :key="item.value"
-          :label="item.label"
-          :value="item.value"
-        />
-      </el-select>
+      <el-row :gutter="15">
+        <el-col :xs="24" :sm="12" :lg="6" style="width: 600px">
+          <el-select
+            v-model="termCode"
+            placeholder="请选择学期"
+            class="form-input"
+            @change="handleTermCodeChange"
+          >
+            <el-option
+              v-for="item in termList"
+              :key="item.termCode"
+              :label="item.termName"
+              :value="item.termCode"
+            />
+          </el-select>
+        </el-col>
+        <el-col :xs="24" :sm="12" :lg="6">
+          <el-select
+            v-model="termUniqueCode"
+            placeholder="请选择周"
+            class="form-input"
+            :disabled="!termCode"
+          >
+            <el-option
+              v-for="item in weekList"
+              :key="item.value"
+              :label="item.label"
+              :value="item.value"
+            />
+          </el-select>
+        </el-col>
+        <el-col :xs="24" :sm="12" :lg="6">
+          <el-select
+            v-model="classCode"
+            placeholder="请选择年级"
+            class="form-input"
+            @change="handleClassCodeChange"
+            :disabled="!termUniqueCode"
+          >
+            <el-option
+              v-for="item in gradeList"
+              :key="item.value"
+              :label="item.label"
+              :value="item.value"
+            />
+          </el-select>
+        </el-col>
+        <el-col :xs="24" :sm="12" :lg="4">
+          <!-- <el-button plain @click="handleSearch">搜索</el-button>
+        <el-button type="success" @click="handleAdd">新增</el-button> -->
+        </el-col>
+      </el-row>
     </div>
     <div class="schedule-table">
       <!-- <el-scrollbar height="100%"> -->
@@ -110,8 +142,8 @@
                 v-model="row[day.value].courseCode"
                 placeholder="课程"
                 size="small"
-                :disabled="isDayDisabled(day.value)"
                 @change="handleChange($event, rowIndex, day.value, 'course')"
+                disabled
               >
                 <el-option
                   v-for="course in courseList"
@@ -125,7 +157,7 @@
                 placeholder="教师"
                 size="small"
                 readonly
-                :disabled="isDayDisabled(day.value)"
+                disabled
                 @click="handleSelectTeacher(rowIndex, day.value)"
               >
               </el-input>
@@ -133,7 +165,7 @@
                 v-model="row[day.value].roomCode"
                 placeholder="教室"
                 size="small"
-                :disabled="isDayDisabled(day.value)"
+                disabled
                 @change="handleChange($event, rowIndex, day.value, 'room')"
               >
                 <el-option
@@ -153,12 +185,6 @@
       </el-table>
       <!-- </el-scrollbar> -->
     </div>
-
-    <div class="footer" v-if="classCode">
-      <el-button type="primary" @click="saveSchedule">{{ btnText }}</el-button>
-      <el-button @click="cancel">取消</el-button>
-    </div>
-
     <SelectTeacher
       ref="selectTeacherRef"
       :multiple="false"
@@ -175,10 +201,9 @@ import SelectTeacher from "@/components/user/select.vue";
 import { ClassRoomService } from "@/api/classRoom";
 import { GradeService } from "@/api/gradeApi";
 import { CourseArrangeService } from "@/api/courseArrange";
-
+import { TermService } from "@/api/termApi";
 const currentDateTime = ref("");
 const route = useRoute();
-const router = useRouter();
 // 更新当前时间
 const updateDateTime = () => {
   const now = new Date();
@@ -354,21 +379,6 @@ const getDefaultScheduleData = () => [
 ];
 // 课程表数据
 const scheduleData = ref<any[]>(getDefaultScheduleData());
-const flattenWeekData = (row: any, weekDates: string[]) => {
-  const weekDays = ["monday", "tuesday", "wednesday", "thursday", "friday"];
-  return weekDays.map((day, idx) => {
-    const dayData = row[day] || {};
-    return {
-      weekday: day,
-      arrangeDate: weekDates[idx],
-      type: row.isActivity ? "ACTIVITY" : "CLASSIC",
-      classSettingName: row.classSettingName,
-      startTime: row.timeRange[0],
-      endTime: row.timeRange[1],
-      ...dayData
-    };
-  });
-};
 // 获取课程列表
 const courseList = ref<{ courseName: string; courseCode: string }[]>([]);
 const getCourseList = () => {
@@ -377,6 +387,26 @@ const getCourseList = () => {
       courseList.value = res.data.list;
     }
   );
+};
+// 学期列表
+const termCode = ref("");
+const termUniqueCode = ref("");
+const termList = ref<any[]>([]);
+const weekList = ref<any[]>([]);
+const getTermList = () => {
+  TermService.getTermList({ pageNum: 1, pageSize: 1000 }).then((res) => {
+    termList.value = res.data.list;
+  });
+};
+const handleTermCodeChange = (value: string) => {
+  weekList.value = termList.value
+    .find((item) => item.termCode === value)
+    ?.termWeekInfoList.map((item: any) => {
+      return {
+        label: `第${item.weekNum}周`,
+        value: item.termUniqueCode
+      };
+    });
 };
 
 const selectTeacherRef = ref(null);
@@ -427,62 +457,21 @@ const getRoomList = () => {
     }
   );
 };
+
 // 显示新增还是编辑按钮
-const btnText = ref("新增");
 const handleClassCodeChange = (value: string) => {
   CourseArrangeService.getCourseArrangeDetail({
-    termUniqueCode: route.query.termUniqueCode,
+    termUniqueCode: termUniqueCode.value,
     classCode: value
   }).then((res) => {
     if (res.code === 0 && Array.isArray(res.data)) {
-      if (res.data.length > 0) {
-        btnText.value = "编辑";
-        scheduleData.value = res.data.map((item: any) => ({
+      scheduleData.value =
+        res.data.map((item: any) => ({
           ...item,
           isActivity: item.activity
-        }));
-      } else {
-        btnText.value = "新增";
-        ElMessage.warning("暂无排课数据，已自动生成默认排课数据");
-        scheduleData.value = getDefaultScheduleData();
-      }
+        })) || [];
     }
   });
-};
-
-// 保存课程表
-const saveSchedule = () => {
-  let params: any = {
-    termCode: route.query.termCode,
-    termUniqueCode: route.query.termUniqueCode,
-    classCode: classCode.value,
-    arrangeInfoList: []
-  };
-  scheduleData.value.forEach((row) => {
-    const data = flattenWeekData(row, weekDates.value);
-    params.arrangeInfoList.push(...data);
-  });
-  if (btnText.value === "新增") {
-    CourseArrangeService.saveCourseArrange(params).then((res) => {
-      if (res.code === 0) {
-        ElMessage.success("新增成功");
-        router.back();
-      } else {
-        ElMessage.error(res.message);
-      }
-    });
-  } else {
-    CourseArrangeService.editCourseArrange(params).then((res) => {
-      if (res.code === 0) {
-        ElMessage.success("编辑成功");
-        router.back();
-      }
-    });
-  }
-};
-// 取消
-const cancel = () => {
-  router.back();
 };
 // 监听路由变化
 watch(
@@ -538,6 +527,7 @@ onMounted(() => {
   getCourseList();
   getRoomList();
   getGradeList();
+  getTermList();
 });
 </script>
 
@@ -545,11 +535,10 @@ onMounted(() => {
 .schedule-container {
   padding: 20px;
   background-color: #fff;
-  min-height: calc(100vh - 120px) !important;
-  max-height: calc(100vh - 120px) !important;
   overflow: hidden;
   display: flex;
   flex-direction: column;
+  height: 100%;
 }
 
 .header {

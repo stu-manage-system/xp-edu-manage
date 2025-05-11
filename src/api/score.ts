@@ -36,7 +36,8 @@ export class ScoreService {
   // 详情
   static getScoreDetail(params: any) {
     return request.get<BaseResult>({
-      url: `/score/getDetail/${params}`,
+      url: `/score/getDetail`,
+      params,
     });
   }
 }
