@@ -1,5 +1,9 @@
 import { useUserStore } from "@/store/modules/user";
-import axios, { AxiosRequestConfig, AxiosResponse, InternalAxiosRequestConfig } from "axios";
+import axios, {
+  AxiosRequestConfig,
+  AxiosResponse,
+  InternalAxiosRequestConfig,
+} from "axios";
 import { ElMessage } from "element-plus";
 import { useRouter } from "vue-router";
 import EmojiText from "../emojo";
@@ -19,7 +23,9 @@ const axiosInstance = axios.create({
     (data) => {
       // 响应数据转换
       try {
-        return typeof data === "string" && data.startsWith("{") ? JSON.parse(data) : data;
+        return typeof data === "string" && data.startsWith("{")
+          ? JSON.parse(data)
+          : data;
       } catch {
         return data; // 解析失败时返回原数据
       }
@@ -56,7 +62,10 @@ axiosInstance.interceptors.response.use((response: AxiosResponse) => {
   const errorCode = 100028;
   if (response.data.code != 0) {
     const msg = response.data.message ? response.data.message : "服务错误";
-    if (response.data.code === "tokenError" || response.data.code == errorCode) {
+    if (
+      response.data.code === "tokenError" ||
+      response.data.code == errorCode
+    ) {
       ElMessage.error(msg);
       useUserStore().logOut();
       router.push("/login");

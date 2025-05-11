@@ -286,6 +286,7 @@
     stuHouse: "",
     ctime: "",
     parents: [],
+    gradeClassList: [],
   });
 
   const gradeList = ref<

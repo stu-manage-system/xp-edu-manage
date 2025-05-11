@@ -160,14 +160,23 @@
       </el-form>
       <template #footer>
         <el-button
+          v-if="approvalDetail?.actionButton.includes('REJECT')"
           type="danger"
-          @click="submitApproval('reject')"
+          @click="submitApproval('REJECT')"
           :loading="isSubmitLoading"
           >拒绝</el-button
         >
         <el-button
+          v-if="approvalDetail?.actionButton.includes('CC')"
+          type="danger"
+          @click="submitApproval('CC')"
+          :loading="isSubmitLoading"
+          >拒绝</el-button
+        >
+        <el-button
+          v-if="approvalDetail?.actionButton.includes('THROUGH')"
           type="primary"
-          @click="submitApproval('agree')"
+          @click="submitApproval('THROUGH')"
           :loading="isSubmitLoading"
           >同意</el-button
         >
@@ -294,14 +303,16 @@
         ElMessage.error("请输入审批意见");
         return;
       }
-      if (type === "agree") {
-        approvalForm.action = "AGREE";
-      } else {
+      if (type === "THROUGH") {
+        approvalForm.action = "THROUGH";
+      } else if (type === "CC") {
+        approvalForm.action = "CC";
+      } else if (type === "REJECT") {
         approvalForm.action = "REJECT";
       }
 
       const res = await ApprovalService.approval(approvalForm);
-      if (res.code === 200) {
+      if (res.code === 0) {
         ElMessage.success("审批成功");
         dialogVisible.value = false;
         getStudentList();
@@ -349,6 +360,11 @@
 
   onMounted(() => {
     getStudentList();
+  });
+  watch(dialogVisible, (val) => {
+    if (!val) {
+      approvalDetail.value = null;
+    }
   });
 </script>
 
