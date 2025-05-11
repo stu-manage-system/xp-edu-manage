@@ -57,13 +57,7 @@
     <div class="schedule-table">
       <!-- <el-scrollbar height="100%"> -->
       <div class="no-data" v-if="!classCode"></div>
-      <el-table
-        v-else
-        :data="scheduleData"
-        border
-        style="width: 100%"
-        height="calc(100vh - 260px)"
-      >
+      <el-table v-else :data="scheduleData" border style="width: 100%">
         <!-- 课时列 -->
         <el-table-column
           prop="classSettingName"

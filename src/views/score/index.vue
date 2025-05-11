@@ -1,5 +1,5 @@
 <template>
-  <div class="class-plan">
+  <div class="page-content">
     <div class="search-bar">
       <el-form :inline="true" class="search-form">
         <div class="form-container">
@@ -301,7 +301,7 @@ onMounted(() => {
 </script>
 
 <style scoped lang="scss">
-.class-plan {
+.page-content {
   padding: 20px;
 }
 
@@ -309,10 +309,9 @@ onMounted(() => {
   display: flex;
   //justify-content: center;
   align-items: flex-start;
-  margin-bottom: 20px;
 
   .search-form {
-    margin: 20px 0;
+    // margin: 20px 0;
 
     .form-container {
       display: flex;

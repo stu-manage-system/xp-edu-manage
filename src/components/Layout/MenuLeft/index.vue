@@ -53,6 +53,7 @@ import { HOME_PAGE } from "@/router/index";
 import { useSettingStore } from "@/store/modules/setting";
 import { useUserStore } from "@/store/modules/user";
 import Submenu from "../Submenu/submenu.vue";
+import { useMenuStore } from "@/store/modules/menu";
 
 const route = useRoute();
 const router = useRouter();
@@ -64,57 +65,10 @@ const menuCloseWidth = MenuWidth.CLOSE;
 const collapse = computed(() => !settingStore.menuOpen);
 const uniqueOpened = computed(() => settingStore.uniqueOpened);
 const defaultOpenedsArray = ref([]);
-// const menuList = computed(() => useMenuStore().getMenuList)
+// const menuList = computed(() => useMenuStore().getMenuList);
 
 const menuList = computed(() => {
-  const list = userStore.menuList.concat([
-    {
-      path: "/approval",
-      name: "Approval",
-      meta: {
-        title: "审批"
-      },
-      children: [
-        {
-          path: "/approval/student",
-          name: "StudentApproval",
-          meta: {
-            title: "学生请假"
-          }
-        },
-        {
-          path: "/approval/device",
-          name: "DeviceApproval",
-          meta: {
-            title: "设备申请"
-          }
-        }
-      ]
-    },
-    {
-      path: "/termManage",
-      name: "TermManage",
-      meta: {
-        title: "学期管理"
-      },
-      children: [
-        {
-          path: "/termManage/list",
-          name: "TermList",
-          meta: {
-            title: "学期列表"
-          }
-        },
-        {
-          path: "/termManage/courseArrange",
-          name: "CourseArrange",
-          meta: {
-            title: "排课列表"
-          }
-        }
-      ]
-    }
-  ]);
+  const list = userStore.menuList;
   if (settingStore.menuType === MenuTypeEnum.TOP_LEFT) {
     const currentTopPath = "/" + route.path.split("/")[1];
     const currentTopMenu = list.find((menu) => menu.path === currentTopPath);
