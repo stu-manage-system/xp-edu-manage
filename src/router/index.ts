@@ -239,29 +239,11 @@ const allRoutes = [
       {
         path: "/system/menu",
         name: "Menu",
-        component: () => import("@views/score/index.vue"),
+        component: () => import("@views/system/menu.vue"),
         meta: {
-          title: "菜单管理"
-        }
+          title: "菜单管理",
+        },
       },
-      {
-        path: "/system/add",
-        name: "MenuAdd",
-        component: () => import("@/views/teachFeed/form.vue"),
-        meta: {
-          title: "新增教学反馈",
-          hidden: true
-        }
-      },
-      {
-        path: "/system/edit/:id",
-        name: "MenuEdit",
-        component: () => import("@/views/teachFeed/form.vue"),
-        meta: {
-          title: "编辑教学反馈",
-          hidden: true
-        }
-      }
     ]
   },
   {
@@ -349,67 +331,38 @@ const allRoutes = [
         }
       },
       {
+        path: "/teachingManage/score",
+        name: "Score",
+        component: () => import("@views/score/index.vue"),
+        meta: {
+          title: "成绩管理"
+        }
+      },
+      {
         path: "/teachingManage/teachFeed",
         name: "TeachFeed",
         component: () => import("@views/teachFeed/index.vue"),
         meta: {
           title: "教学反馈"
         }
-        // children: [
-        //   {
-        //     path: 'add',
-        //     name: 'TeachFeedAdd',
-        //     component: () => import('@/views/teachFeed/form.vue'),
-        //     meta: {
-        //       title: '新增教学反馈'
-        //     }
-        //   },
-        //   {
-        //     path: 'edit/:id',
-        //     name: 'TeachFeedEdit',
-        //     component: () => import('@/views/teachFeed/form.vue'),
-        //     meta: {
-        //       title: "编辑教学反馈"
-        //     }
-        //   }
-        // ]
-      }
-    ]
-  },
-  {
-    path: "/salary",
-    component: Home,
-    name: "SalaryManage",
-    meta: {
-      title: "薪资管理"
-    },
-    children: [
+      },
       {
-        path: "/salary/list",
-        name: "SalaryList",
-        component: () => import("@views/salary-manage/index.vue"),
+        path: "/teachingManage/add",
+        name: "TeachFeedAdd",
+        component: () => import("@/views/teachFeed/form.vue"),
         meta: {
-          title: "薪资列表"
+          title: "新增教学反馈",
+          hidden: true
         }
-      }
-    ]
-  },
-  {
-    path: "/revenue",
-    component: Home,
-    name: "Revenue",
-    meta: {
-      title: "营收中心"
-    },
-    children: [
+      },
       {
-        path: "/revenue/manage",
-        name: "RevenueManage",
-        component: () => import("@views/revenue/index.vue"),
+        path: "/teachingManage/edit/:id",
+        name: "TeachFeedEdit",
+        component: () => import("@/views/teachFeed/form.vue"),
         meta: {
-          title: "营收管理"
-        },
-        roles: ["admin", "company"]
+          title: "编辑教学反馈",
+          hidden: true
+        }
       }
     ]
   },
@@ -419,7 +372,8 @@ const allRoutes = [
     component: Home,
     name: "TermManage",
     meta: {
-      title: "学期管理"
+      title: "学期管理",
+      icon: "\ue7bc"
     },
     children: [
       {
@@ -454,7 +408,8 @@ const allRoutes = [
     component: Home,
     name: "Approval",
     meta: {
-      title: "审批"
+      title: "审批管理",
+      icon: "\ue7b7"
     },
     children: [
       {
